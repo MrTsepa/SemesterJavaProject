@@ -1,6 +1,7 @@
-/**
- * Created by stas on 19.03.16.
- */
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
 public class Main {
     public static void main(String args[]) {
         System.out.println("Hello"+" world!");

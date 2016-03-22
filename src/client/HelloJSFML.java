@@ -1,6 +1,7 @@
-package client_socket;
+package client;
 
 import java.io.IOException;
+import java.net.*;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.Keyboard;
@@ -8,13 +9,13 @@ import org.jsfml.window.event.*;
 import org.jsfml.window.VideoMode;
 
 public class HelloJSFML {
-    socketConnection client1 = new socketConnection();
+    SocketConnection client1 = new SocketConnection();
         
     public static void main(String args[]) throws IOException {
         RenderWindow window = new RenderWindow();
         window.create(new VideoMode(640, 480), "Hello JSFML!");
         window.setFramerateLimit(30);
-        socketConnection.Connect();
+        SocketConnection.Connect();
 
         //LocalSocketWrapper socketConnection = new LocalSocketWrapper();
 

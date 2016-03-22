@@ -1,3 +1,6 @@
+package client;
+
+import client.ExchangeXY;
 import org.jsfml.system.Vector2f;
 
 /**
