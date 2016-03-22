@@ -27,13 +27,6 @@ class SocketConnection implements ExchangePlayerInfo {
         } catch (IOException e) {
             System.out.println("Can't accept");
             System.exit(-1);
-        } finally {
-            System.out.println("closing...");
-            try {
-                socket.close();
-            } catch (IOException e) {
-                System.out.println("Socket closing error");
-            }
         }
     }
 
@@ -65,6 +58,8 @@ class SocketConnection implements ExchangePlayerInfo {
 
         }
     }
+    
+    //TODO socket.close() в деструкторе
 
     @Override
     public World getWorld() {
