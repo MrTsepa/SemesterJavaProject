@@ -11,9 +11,12 @@ class SocketConnection implements ExchangePlayerInfo {
 
     private static Socket socket;
     static InetAddress addr;
-    private static World world;
 
     private static final int playerCount = 2;
+
+    SocketConnection() {
+        connect();
+    }
 
     private static void connect() {
         try {
@@ -34,17 +37,18 @@ class SocketConnection implements ExchangePlayerInfo {
         }
     }
 
-    private void recv() {
+    private World recv() {
         try {
             InputStream inputStream = socket.getInputStream();
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
             ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
 
-            world = (World) objectInputStream.readObject();
+            return (World) objectInputStream.readObject();
         } catch (IOException e) {
             System.out.println("Recv error");
+            return null;
         } catch (ClassNotFoundException e) {
-
+            return null;
         }
     }
 
@@ -64,8 +68,7 @@ class SocketConnection implements ExchangePlayerInfo {
 
     @Override
     public World getWorld() {
-        recv();
-        return world;
+        return recv();
     }
 
     @Override

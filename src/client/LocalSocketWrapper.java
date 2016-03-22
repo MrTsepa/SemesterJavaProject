@@ -1,36 +1,31 @@
 package client;
 
-import client.ExchangeXY;
-import org.jsfml.system.Vector2f;
+import world.PlayerInfo;
+import world.PlayerInfoXY;
+import world.World;
 
 /**
  * Этот класс нужен для проверки работы интерфейса
  * Он рисует второй кружок сдвинутым на (200, 200) относительно первого
  * Created by stas on 20.03.16.
  */
-class LocalSocketWrapper implements ExchangeXY {
+class LocalSocketWrapper implements ExchangePlayerInfo {
 
-    private Vector2f[] XYArray = new Vector2f[2];
+    World world = new World();
 
-    LocalSocketWrapper() {
-        XYArray[0] = new Vector2f(100, 100);
-        XYArray[1] = new Vector2f(300, 300);
+    public LocalSocketWrapper() {
+        world.playerInfos.add(new PlayerInfoXY(100, 100));
+        world.playerInfos.add(new PlayerInfoXY(300, 300));
     }
 
     @Override
-    public Vector2f[] getRemoteXYArray() {
-        return XYArray;
+    public World getWorld() {
+        return world;
     }
 
     @Override
-    public Vector2f getSelfXY() {
-        return XYArray[0];
-    }
-
-    @Override
-    public void setSelfXY(Vector2f XY) {
-        XYArray[0] = XY;
-        XYArray[1] = new Vector2f(XY.x + 200, XY.y + 200);
+    public void setSelfPlayerInfo(PlayerInfo playerInfo) {
+        world.playerInfos.set(0, playerInfo);
     }
 
     @Override
