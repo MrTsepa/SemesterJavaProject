@@ -1,8 +1,17 @@
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.lang.*;
 
 public class Server {
+    public static void main(String[] args) throws IOException{
+        Server s = new Server(10);        
+    
+        Service service = new Service();
+        int port = 8080;
+        s.addService(service, port);
+    }
     Map services; // связывает порты с объектами Listener
     Set connections; // текущие подключения
     int maxConnections; // максимальное количестов подклчений
@@ -92,7 +101,7 @@ public class Server {
                 out.print("Сервер перегружен");
                 out.flush();
                 s.close();
-            }catch(IOExcepion e){}  
+            }catch(IOException e){}  
             }else{
                 Connection c = new Connection(s, service);
                 connections.add(c);
@@ -157,4 +166,6 @@ public class Server {
 
 
 }
+   
+        
 
