@@ -2,6 +2,7 @@ package client;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
@@ -10,6 +11,8 @@ import org.jsfml.window.event.*;
 import org.jsfml.window.VideoMode;
 
 import world.*;
+import world.game.Team;
+import world.game.objects.Cell;
 
 public class HelloJSFML {
     SocketConnection client1 = new SocketConnection();
@@ -18,17 +21,17 @@ public class HelloJSFML {
         RenderWindow window = new RenderWindow();
         window.create(new VideoMode(640, 480), "Hello JSFML!");
         window.setFramerateLimit(30);
-        SocketConnection socketConnection = new SocketConnection();
 
-        //LocalSocketWrapper socketConnection = new LocalSocketWrapper();
+        ArrayList<Drawable> drawables = new ArrayList<>();
 
-        CircleShape[] circleShapes = new CircleShape[2];
-        circleShapes[0] = new CircleShape(50);
-        circleShapes[1] = new CircleShape(50);
+        Cell cell1 = new Cell(new Vector2f(30, 10), 15, Team.Player1);
+        Cell cell2 = new Cell(new Vector2f(400, 200), 20, Team.Player1);
+        cell1.addTentacle(cell2);
+        cell1.tentacleSet.iterator().next().setDistancePart((float) 0);
+        drawables.add(cell1);
+        drawables.add(cell2);
 
-        circleShapes[0].setFillColor(Color.RED);
-        circleShapes[1].setFillColor(Color.GREEN);
-
+        float x = 0.0f;
         while (window.isOpen()) {
             for (Event event : window.pollEvents()) {
                 if (event.type == Event.Type.CLOSED) {
@@ -46,9 +49,14 @@ public class HelloJSFML {
                 }
             }
 
+            cell1.tentacleSet.iterator().next().setDistancePart(x);
+            if(x < 1)
+                x += 0.006f;
             window.clear(Color.BLACK);
-            for (CircleShape shape: circleShapes) {
-                window.draw(shape);
+
+            for (Drawable drawable :
+                    drawables) {
+                window.draw(drawable);
             }
 
             window.display();
