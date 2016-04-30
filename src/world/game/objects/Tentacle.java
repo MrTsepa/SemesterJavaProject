@@ -54,10 +54,10 @@ public class Tentacle implements Drawable {
             );
             polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
             renderTarget.draw(polygon);
-            headPosition = Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight));
-            if (Float.compare(length(Vector2f.sub(headPosition, parentCell.getPosition())), triangleHeight) < 0) {
+            if (Float.compare(length(Vector2f.sub(headPosition, parentBorderPosition)), triangleHeight) < 0) {
                 break;
             }
+            headPosition = Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight));
         }
     }
 

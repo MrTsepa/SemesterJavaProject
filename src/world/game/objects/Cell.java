@@ -4,6 +4,8 @@ import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import world.game.Team;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,11 +15,12 @@ public class Cell implements Drawable {
     static HashMap<Team, Color> teamColorMap = new HashMap<>();
     private int energy;
     public Set<Tentacle> tentacleSet = new HashSet<>();
-    private Vector2f position;
+    final private Vector2f position;
     /**
      * enumeration {Neutral, Player1, Player2}
      */
     private Team team;
+    Font font = new Font();
 
     /**
      * @return координаты центра клетки
@@ -47,6 +50,11 @@ public class Cell implements Drawable {
         this.position = position;
         this.energy = energy;
         this.team = team;
+        try {
+            font.loadFromFile((new File("font/ArialBlack.ttf")).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initTeamColorMap() {
@@ -65,13 +73,21 @@ public class Cell implements Drawable {
 
     @Override
     public void draw(RenderTarget renderTarget, RenderStates renderStates) {
-        tentacleSet.forEach(renderTarget::draw);
+        for (Tentacle tentacle :
+                tentacleSet) {
+            renderTarget.draw(tentacle);
+        }
 
         CircleShape circleShape = new CircleShape(getRadius());
         circleShape.setFillColor(teamColorMap.get(team));
         circleShape.setPosition(position);
         renderTarget.draw(circleShape);
-        // TODO text
+
+        Text text = new Text((new Integer(energy)).toString(), font, 13);
+        text.setColor(Color.BLACK);
+        FloatRect textRect = text.getGlobalBounds();
+        text.setPosition(Vector2f.sub(getPosition(), new Vector2f(textRect.width/2, textRect.height/2 + 3)));
+        renderTarget.draw(text);
     }
 
     public float getRadius() {
