@@ -6,29 +6,28 @@ import java.util.*;
 import java.lang.*;
 
 public class Server {
-    public static void main(String[] args) throws IOException{
-        Server s = new Server(10);        
-    
+    public static void main(String[] args) throws IOException {
+        Server s = new Server(10);
+
         Service service = new Service();
         int port = 8080;
         s.addService(service, port);
     }
-    Map services; // связывает порты с объектами Listener
-    Set connections; // текущие подключения
+    Map<Integer, Listener> services; // связывает порты с объектами Listener
+    Set<Connection> connections; // текущие подключения
     int maxConnections; // максимальное количестов подклчений
     ThreadGroup threadGroup; //все потоки исполнения
     
     // конструктор класса, задаёт значения полей класса 
-    public Server(int maxConnections){
+    public Server(int maxConnections) {
         threadGroup = new ThreadGroup(Server.class.getName());
         this.maxConnections = maxConnections;
-        services = new HashMap();
-        connections = new HashSet(maxConnections);
-    }  
-    
+        services = new HashMap<>();
+        connections = new HashSet<>(maxConnections);
+    }
+
     //запускает объект сервер на заданно порте
-    public void addService(Service service, int port) throws IOException
-    {
+    public void addService(Service service, int port) throws IOException {
         Integer key = new Integer(port);//ключ хеш-таблицы
         //проверяем не занят ли этот порт службой
         if(services.get(key) != null)
@@ -45,10 +44,10 @@ public class Server {
     
     
     // прекращение принятия сервером новых подключений
-    public void removeService(int port){
-        Integer key = new Integer(port);
+    public void removeService(int port) {
+        Integer key = port;
         //ищем в хэш таблице объект Listener, соответствующий заданному порту
-        final Listener listener = (Listener) services.get(key);
+        final Listener listener = services.get(key);
         if(listener == null)
             return;
         //остановка Listener
@@ -58,8 +57,8 @@ public class Server {
     }
     
     //вложенный класс, слушает заданный порт 
-    public class Listener extends Thread{
-        ServerSocket listen_socket; // объект ServerSocket ожидает подключений
+    public class Listener extends Thread {
+        ServerSocket listenSocket; // объект ServerSocket ожидает подключений
         int port; // порт, который слушаем
         Service service; // служба по этому порту
         volatile boolean stop = false; //флаг для команды остановки
@@ -67,9 +66,9 @@ public class Server {
         //конструктор, создает ServerSocket по заданному порту и настраивает его
         public Listener(ThreadGroup group, int port, Service service) throws IOException{
             super(group, "Listener:" + port);
-            listen_socket = new ServerSocket(port);
+            listenSocket = new ServerSocket(port);
             //задаем паузу для возможномти прерывания
-            listen_socket.setSoTimeout(600000);
+            listenSocket.setSoTimeout(600000);
             this.port = port;
             this.service = service;
         }
@@ -78,14 +77,14 @@ public class Server {
         public void pleaseStop(){
             this.stop = true; 
             this.interrupt();
-            try{listen_socket.close();} 
+            try{listenSocket.close();}
             catch(IOException e){}
         }
         // вызов addConnection
         public void run(){
             while(!stop){
             try{
-                Socket client = listen_socket.accept();
+                Socket client = listenSocket.accept();
                 addConnection(client, service);
             }     
             catch(InterruptedIOException e){}
@@ -94,21 +93,22 @@ public class Server {
         }
        
     }
-    protected void addConnection(Socket s, Service service)
+
+    protected void addConnection(Socket socket, Service service)
     {
         if(connections.size() >= maxConnections){
-            try{
-                PrintWriter out = new PrintWriter(s.getOutputStream());
+            try {
+                PrintWriter out = new PrintWriter(socket.getOutputStream());
                 out.print("Сервер перегружен");
                 out.flush();
-                s.close();
-            }catch(IOException e){}  
-            }else{
-                Connection c = new Connection(s, service);
+                socket.close();
+            } catch(IOException e) {}
+            } else {
+                Connection c = new Connection(socket, service);
                 connections.add(c);
                 c.start();
             }
-    }  
+    }
     
     protected void endConnection(Connection c){
         connections.remove(c);
@@ -119,7 +119,7 @@ public class Server {
     }
     
     //выводит состояние сервера
-    public void displayStatus(PrintWriter out){
+    public void displayStatus(PrintWriter out) {
         //отображает список всех служб
         Iterator keys = services.keySet().iterator();
         while(keys.hasNext()){
@@ -134,38 +134,38 @@ public class Server {
         Iterator conns = connections.iterator();
         while(conns.hasNext()){
             Connection c = (Connection) conns.next();
-            out.println("подключение к" + c.client.getInetAddress().getHostAddress() + ":" +
-            c.client.getPort() + "по порту" + c.client.getLocalPort() + 
+            out.println("подключение к" + c.clientSocket.getInetAddress().getHostAddress() + ":" +
+            c.clientSocket.getPort() + "по порту" + c.clientSocket.getLocalPort() +
             "для службы" + c.service.getClass().getName());
         }
         
     }
     //класс для обработки подключений, каждое подключени обладает собсвенным потоком
     public class Connection extends Thread {
-        Socket client;
+        Socket clientSocket;
         Service service;
         
         //конструктор для создания потока и задания полей
-         public Connection(Socket client, Service service){
+         public Connection(Socket clientSocket, Service service) {
             //создание потока исполнения
-            super("Server.Connection:" + client.getInetAddress().getHostAddress() + ":" + client.getPort());
-            this.client = client;
+            super("Server.Connection:" + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
+            this.clientSocket = clientSocket;
             this.service = service;
         
         }
         //передает полученные потоки в службу
-        public void run(){
-            try{
-                InputStream in = client.getInputStream();
-                OutputStream out = client.getOutputStream();
+        public void run() {
+            try {
+                InputStream in = clientSocket.getInputStream();
+                OutputStream out = clientSocket.getOutputStream();
                 service.serve(in, out);
             }
             catch(IOException e) {}
-            finally{endConnection(this);}
+            finally {
+                endConnection(this);
+            }
         }
     }
-
-
 }
    
         

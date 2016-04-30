@@ -10,18 +10,18 @@ public class Service {
     public int id = 0;
     public int nextId() {return id++;}
     
-    public void serve(InputStream i, OutputStream o) throws IOException{
+    public void serve(InputStream inputStream, OutputStream outputStream) throws IOException{
         // настраиваем потоки
-        BufferedInputStream in = new BufferedInputStream(i);
-        ObjectInputStream inObject = new ObjectInputStream(in);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
          
-        BufferedOutputStream out = new BufferedOutputStream(o);
-        ObjectOutputStream outObject = new ObjectOutputStream(out);
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
         
         //записываем новый мир и отправляем его
         //ourWorld = (World) inObject;
-        outObject.writeObject(ourWorld);
-        outObject.writeObject(nextId());
+        objectOutputStream.writeObject(ourWorld);
+        objectOutputStream.writeObject(nextId());
         
     }
     
