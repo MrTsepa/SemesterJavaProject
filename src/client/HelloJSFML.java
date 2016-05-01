@@ -14,6 +14,31 @@ import world.game.events.*;
 import world.game.objects.Cell;
 
 public class HelloJSFML {
+
+    static class DrawRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            // TODO
+        }
+    }
+
+    static class RecvRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            // TODO
+        }
+    }
+
+    static class EventHandleRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            // TODO
+        }
+    }
+
     public static void main(String args[]) throws IOException {
         RenderWindow window = new RenderWindow();
         window.create(new VideoMode(640, 480), "Hello JSFML!");
