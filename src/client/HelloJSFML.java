@@ -5,17 +5,19 @@ import java.util.ArrayList;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
-import org.jsfml.window.Keyboard;
 import org.jsfml.window.VideoMode;
 
 import org.jsfml.window.event.Event;
+import world.UpdateRunnable;
+import world.World;
 import world.game.Team;
-import world.game.events.*;
 import world.game.objects.Cell;
 
 public class HelloJSFML {
 
-    static class DrawRunnable implements Runnable {
+    static World world;
+
+    static class DemoRunnable implements Runnable {
 
         @Override
         public void run() {
@@ -39,16 +41,6 @@ public class HelloJSFML {
                 for (Event event : window.pollEvents()) {
                     if (event.type == Event.Type.CLOSED) {
                         window.close();
-                    }
-                    if (event.type == Event.Type.KEY_PRESSED) {
-                        if (event.asKeyEvent().key == Keyboard.Key.LEFT) {
-                        }
-                        if (event.asKeyEvent().key == Keyboard.Key.RIGHT) {
-                        }
-                        if (event.asKeyEvent().key == Keyboard.Key.UP) {
-                        }
-                        if (event.asKeyEvent().key == Keyboard.Key.DOWN) {
-                        }
                     }
                 }
 
@@ -82,6 +74,27 @@ public class HelloJSFML {
         }
     }
 
+    static class DrawRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            RenderWindow window = new RenderWindow();
+            window.create(new VideoMode(640, 480), "Tentacle Wars");
+            window.setFramerateLimit(30);
+            while (window.isOpen()) {
+                for (Event event : window.pollEvents()) {
+                    if (event.type == Event.Type.CLOSED) {
+                        window.close();
+                    }
+                }
+
+                window.clear(Color.BLACK);
+                window.draw(world);
+                window.display();
+            }
+        }
+    }
+
     static class RecvRunnable implements Runnable {
 
         @Override
@@ -99,8 +112,11 @@ public class HelloJSFML {
     }
 
     public static void main(String args[]) throws IOException {
+        Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());
-        drawThread.start();
+        Thread recvThread = new Thread(new RecvRunnable());
+        Thread eventHandleThread = new Thread(new EventHandleRunnable());
+        Thread updateThread = new Thread(new UpdateRunnable());
+        demoThread.start();
     }
 }
-
