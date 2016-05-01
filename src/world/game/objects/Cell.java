@@ -54,7 +54,7 @@ public class Cell implements Drawable, Serializable {
     }
 
     public float getRadius() {
-        return this.energy; // TODO подобрать коэффицент
+        return 10 + this.energy * 0.2f; // TODO подобрать коэффицент
     }
 
     public int getTentacleLimit() {
@@ -84,6 +84,25 @@ public class Cell implements Drawable, Serializable {
         // TODO else
     }
 
+    public boolean tentacleExists(Cell targetCell) {
+        boolean flag = false;
+        for (Tentacle tentacle : tentacleSet) {
+            if (tentacle.targetCell == targetCell) {
+                flag = true;
+            }
+        }
+        return flag;
+    }
+
+    public Tentacle getTentacle(Cell targetCell) {
+        for (Tentacle tentacle : tentacleSet) {
+            if (tentacle.targetCell == targetCell) {
+                return tentacle;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void draw(RenderTarget renderTarget, RenderStates renderStates) {
         for (Tentacle tentacle :
@@ -106,5 +125,4 @@ public class Cell implements Drawable, Serializable {
         text.setPosition(Vector2f.sub(getPosition(), new Vector2f(textRect.width/2, textRect.height/2 + 3)));
         renderTarget.draw(text);
     }
-
 }

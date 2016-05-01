@@ -14,6 +14,7 @@ import world.World;
 import world.game.Team;
 import world.game.objects.Cell;
 import world.game.events.*;
+import world.game.objects.Tentacle;
 
 public class HelloJSFML {
 
@@ -86,7 +87,6 @@ public class HelloJSFML {
             window.setFramerateLimit(30);
 
             Cell parentCellChosen = null;
-            Cell targetCellChosen = null;
 
             while (window.isOpen()) {
                 Cell cellClicked = null;
@@ -96,38 +96,42 @@ public class HelloJSFML {
                     }
                     if (event.type == Event.Type.MOUSE_BUTTON_PRESSED) {
                         Vector2i mousePosition = event.asMouseEvent().position;
-                        for (Cell cell : world.cellArray) {
-                            if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
-                                    < cell.getRadius()) {
-                                cellClicked = cell;
+                        synchronized (world) {
+                            for (Cell cell : world.cellArray) {
+                                if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
+                                        < cell.getRadius()) {
+                                    cellClicked = cell;
+                                }
                             }
                         }
                     }
                 }
                 if (cellClicked != null) {
                     if (parentCellChosen == null) {
-                        if (cellClicked.getTeam() == clientTeam) {
+                        //if (cellClicked.getTeam() == clientTeam) {
                             parentCellChosen = cellClicked;
                             parentCellChosen.isClicked = true;
-                        }
+                        //}
                     } else {
                         if (cellClicked == parentCellChosen) {
                             parentCellChosen.isClicked = false;
                             parentCellChosen = null;
                         } else {
-                            targetCellChosen = cellClicked;
                             parentCellChosen.isClicked = false;
                             world.game.events.Event event =
-                                    new TentacleCreateEvent(parentCellChosen, targetCellChosen);
+                                    new TentacleCreateEvent(parentCellChosen, cellClicked);
                             // TODO Dasha send event
+                            // пока что будет создавтаься локально
+                            parentCellChosen.tentacleSet.add(new Tentacle(parentCellChosen, cellClicked));
                             parentCellChosen = null;
-                            targetCellChosen = null;
                         }
                     }
                 }
 
                 window.clear(Color.BLACK);
-                window.draw(world);
+                synchronized (world) {
+                    window.draw(world);
+                }
                 window.display();
 
             }
@@ -146,7 +150,7 @@ public class HelloJSFML {
         }
     }
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String args[]) throws IOException, InterruptedException {
         clientTeam = Team.Player1;
 
         Cell cell1 = new Cell(new Vector2f(100, 100), 20, Team.Player1);
@@ -160,8 +164,11 @@ public class HelloJSFML {
         Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());
         Thread recvThread = new Thread(new RecvRunnable());
-        Thread updateThread = new Thread(new UpdateRunnable());
+        Thread updateThread = new Thread(new UpdateRunnable(world));
         //demoThread.start();
         drawThread.start();
+        updateThread.start();
+        drawThread.join();
+        updateThread.interrupt();
     }
 }

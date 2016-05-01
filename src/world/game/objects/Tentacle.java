@@ -8,42 +8,53 @@ import java.util.HashSet;
 
 public class Tentacle implements Drawable, Serializable {
 
-    static final float triangleHeight = 10;
-
-    private Cell parentCell;
-    private Cell targetCell;
+    public Cell parentCell;
+    public Cell targetCell;
 
     /**
      * число в инетрвале [0, 1] отражающее какую часть
      * отрезка между клетками прошла тентакля
      */
-    private float distancePart;
-
-    public Integer getTriangleCount() {
-        return triangleCount;
-    }
-
-    private Integer triangleCount = 0;
-
-    public HashSet<Integer> yellowTriangles = new HashSet<>();
-
+    private float distancePart = 0;
     public float getDistancePart() {
         return distancePart;
     }
-
     public void setDistancePart(float distancePart) {
         this.distancePart = distancePart;
     }
 
+    static final float triangleHeight = 10;
+    private Integer triangleCount = 0;
+    public Integer getTriangleCount() {
+        return triangleCount;
+    }
+    public HashSet<Integer> yellowTriangles = new HashSet<>();
+
+    public enum State { MovingForward, MovingBackward, Still }
+    public State state  = State.MovingForward;
+
     public Tentacle(Cell parentCell, Cell targetCell) {
         this.parentCell = parentCell;
         this.targetCell = targetCell;
-        distancePart = 0;
+    }
+
+    public float getDistance() {
+        return length(getDistanceVector());
+    }
+
+    public Vector2f getDistanceVector() {
+        Vector2f distanceVector = Vector2f.sub(targetCell.getPosition(), parentCell.getPosition());
+        return distanceVector;
+    }
+
+    public Vector2f getNormalizedDistanceVector() {
+        Vector2f normalizedDistanceVector = normalize(getDistanceVector());
+        return normalizedDistanceVector;
     }
 
     @Override
     public void draw(RenderTarget renderTarget, RenderStates renderStates) {
-        Vector2f distanceVector = Vector2f.sub(targetCell.getPosition(), parentCell.getPosition());
+        Vector2f distanceVector = getDistanceVector();
         Vector2f normalizedDistanceVector = normalize(distanceVector);
         Vector2f normalizedOrthogonalVector = normalize(new Vector2f(1, -1*distanceVector.x/distanceVector.y));
         Vector2f parentBorderPosition = Vector2f.add(parentCell.getPosition(),
