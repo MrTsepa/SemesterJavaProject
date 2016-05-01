@@ -1,6 +1,8 @@
 package world.game.events;
 
-public class Event {
+import java.io.Serializable;
+
+public class Event implements Serializable {
     Type type;
     enum Type { TentacleCreate, TentacleDestroy }
     public TentacleCreateEvent asTentacleCreateEvent() throws Exception {

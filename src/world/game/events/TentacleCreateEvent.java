@@ -2,7 +2,9 @@ package world.game.events;
 
 import world.game.objects.Cell;
 
-public class TentacleCreateEvent extends Event{
+import java.io.Serializable;
+
+public class TentacleCreateEvent extends Event implements Serializable {
     public Cell parentCell;
     public Cell targetCell;
 

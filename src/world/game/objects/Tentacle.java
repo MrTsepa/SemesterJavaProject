@@ -3,9 +3,10 @@ package world.game.objects;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
-public class Tentacle implements Drawable {
+public class Tentacle implements Drawable, Serializable {
 
     static final float triangleHeight = 10;
 

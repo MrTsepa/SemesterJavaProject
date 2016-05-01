@@ -6,11 +6,12 @@ import world.game.Team;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Cell implements Drawable {
+public class Cell implements Drawable, Serializable {
 
     static HashMap<Team, Color> teamColorMap = new HashMap<>();
     private int energy;

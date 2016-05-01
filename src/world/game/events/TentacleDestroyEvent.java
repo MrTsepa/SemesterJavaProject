@@ -2,7 +2,9 @@ package world.game.events;
 
 import world.game.objects.Tentacle;
 
-public class TentacleDestroyEvent extends Event{
+import java.io.Serializable;
+
+public class TentacleDestroyEvent extends Event implements Serializable {
     public Tentacle tentacle;
     public float cutPoint;
 
