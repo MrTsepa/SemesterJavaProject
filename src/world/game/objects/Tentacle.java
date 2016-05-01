@@ -56,7 +56,12 @@ public class Tentacle implements Drawable, Serializable {
     public void draw(RenderTarget renderTarget, RenderStates renderStates) {
         Vector2f distanceVector = getDistanceVector();
         Vector2f normalizedDistanceVector = normalize(distanceVector);
-        Vector2f normalizedOrthogonalVector = normalize(new Vector2f(1, -1*distanceVector.x/distanceVector.y));
+        Vector2f normalizedOrthogonalVector;
+        if (distanceVector.y != 0) {
+            normalizedOrthogonalVector = normalize(new Vector2f(1, -1 * distanceVector.x / distanceVector.y));
+        } else {
+            normalizedOrthogonalVector = normalize(new Vector2f(-1 * distanceVector.y / distanceVector.x, 1));
+        }
         Vector2f parentBorderPosition = Vector2f.add(parentCell.getPosition(),
                 Vector2f.mul(normalizedDistanceVector, parentCell.getRadius()));
         Vector2f targetBorderPosition = Vector2f.sub(targetCell.getPosition(),
