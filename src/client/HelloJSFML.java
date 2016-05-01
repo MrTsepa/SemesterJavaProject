@@ -1,22 +1,19 @@
 package client;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.ArrayList;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.Keyboard;
-import org.jsfml.window.event.*;
 import org.jsfml.window.VideoMode;
 
-import world.*;
+import org.jsfml.window.event.Event;
 import world.game.Team;
+import world.game.events.*;
 import world.game.objects.Cell;
 
 public class HelloJSFML {
-    SocketConnection client1 = new SocketConnection();
-        
     public static void main(String args[]) throws IOException {
         RenderWindow window = new RenderWindow();
         window.create(new VideoMode(640, 480), "Hello JSFML!");
