@@ -1,10 +1,9 @@
 package world.game.objects;
 
-import org.jsfml.graphics.ConvexShape;
-import org.jsfml.graphics.Drawable;
-import org.jsfml.graphics.RenderStates;
-import org.jsfml.graphics.RenderTarget;
+import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
+
+import java.util.HashSet;
 
 public class Tentacle implements Drawable {
 
@@ -17,8 +16,15 @@ public class Tentacle implements Drawable {
      * число в инетрвале [0, 1] отражающее какую часть
      * отрезка между клетками прошла тентакля
      */
-    float distancePart;
+    private float distancePart;
 
+    public Integer getTriangleCount() {
+        return triangleCount;
+    }
+
+    private Integer triangleCount = 0;
+
+    public HashSet<Integer> yellowTriangles = new HashSet<>();
 
     public float getDistancePart() {
         return distancePart;
@@ -45,6 +51,7 @@ public class Tentacle implements Drawable {
                 Vector2f.mul(normalizedDistanceVector, targetCell.getRadius()));
         distanceVector = Vector2f.sub(targetBorderPosition, parentBorderPosition);
         Vector2f headPosition = Vector2f.add(parentBorderPosition, Vector2f.mul(distanceVector, distancePart));
+        triangleCount = 0;
         while (true) {
             ConvexShape polygon = new ConvexShape(headPosition,
                     Vector2f.add(Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
@@ -52,12 +59,16 @@ public class Tentacle implements Drawable {
                     Vector2f.sub(Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
                             Vector2f.mul(normalizedOrthogonalVector, triangleHeight/2))
             );
-            polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
+            if (yellowTriangles.contains(triangleCount))
+                polygon.setFillColor(Color.YELLOW);
+            else
+                polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
             renderTarget.draw(polygon);
             if (Float.compare(length(Vector2f.sub(headPosition, parentBorderPosition)), triangleHeight) < 0) {
                 break;
             }
             headPosition = Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight));
+            triangleCount++;
         }
     }
 
