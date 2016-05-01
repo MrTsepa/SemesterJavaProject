@@ -27,11 +27,12 @@ public class HelloJSFML {
         Cell cell1 = new Cell(new Vector2f(30, 10), 15, Team.Player1);
         Cell cell2 = new Cell(new Vector2f(400, 200), 20, Team.Player1);
         cell1.addTentacle(cell2);
-        cell1.tentacleSet.iterator().next().setDistancePart((float) 0);
         drawables.add(cell1);
         drawables.add(cell2);
 
         float x = 0.0f;
+        Integer trianglePosition = 0;
+        boolean flag = true;
         while (window.isOpen()) {
             for (Event event : window.pollEvents()) {
                 if (event.type == Event.Type.CLOSED) {
@@ -52,6 +53,21 @@ public class HelloJSFML {
             cell1.tentacleSet.iterator().next().setDistancePart(x);
             if(x < 1)
                 x += 0.006f;
+            else {
+                cell1.tentacleSet.iterator().next().yellowTriangles.remove(trianglePosition);
+                if (trianglePosition == 0)
+                    trianglePosition = cell1.tentacleSet.iterator().next().getTriangleCount();
+                else {
+                    if (flag) {
+                        trianglePosition--;
+                        flag = false;
+                    } else {
+                        flag = true;
+                    }
+                     // магия
+                }
+                cell1.tentacleSet.iterator().next().yellowTriangles.add(trianglePosition);
+            }
             window.clear(Color.BLACK);
 
             for (Drawable drawable :
