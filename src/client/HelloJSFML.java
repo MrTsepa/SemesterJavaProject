@@ -5,17 +5,22 @@ import java.util.ArrayList;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
+import org.jsfml.system.Vector2i;
 import org.jsfml.window.VideoMode;
-
 import org.jsfml.window.event.Event;
+
 import world.UpdateRunnable;
 import world.World;
 import world.game.Team;
 import world.game.objects.Cell;
+import world.game.events.*;
 
 public class HelloJSFML {
 
+    static RenderWindow window = new RenderWindow();
     static World world;
+
+    static Team clientTeam;
 
     static class DemoRunnable implements Runnable {
 
@@ -75,23 +80,61 @@ public class HelloJSFML {
     }
 
     static class DrawRunnable implements Runnable {
-
         @Override
         public void run() {
-            RenderWindow window = new RenderWindow();
             window.create(new VideoMode(640, 480), "Tentacle Wars");
             window.setFramerateLimit(30);
+
+            Cell parentCellChosen = null;
+            Cell targetCellChosen = null;
+
             while (window.isOpen()) {
+                Cell cellClicked = null;
                 for (Event event : window.pollEvents()) {
                     if (event.type == Event.Type.CLOSED) {
                         window.close();
+                    }
+                    if (event.type == Event.Type.MOUSE_BUTTON_PRESSED) {
+                        Vector2i mousePosition = event.asMouseEvent().position;
+                        for (Cell cell : world.cellArray) {
+                            if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
+                                    < cell.getRadius()) {
+                                cellClicked = cell;
+                            }
+                        }
+                    }
+                }
+                if (cellClicked != null) {
+                    if (parentCellChosen == null) {
+                        if (cellClicked.getTeam() == clientTeam) {
+                            parentCellChosen = cellClicked;
+                            parentCellChosen.isClicked = true;
+                        }
+                    } else {
+                        if (cellClicked == parentCellChosen) {
+                            parentCellChosen.isClicked = false;
+                            parentCellChosen = null;
+                        } else {
+                            targetCellChosen = cellClicked;
+                            parentCellChosen.isClicked = false;
+                            world.game.events.Event event =
+                                    new TentacleCreateEvent(parentCellChosen, targetCellChosen);
+                            // TODO Dasha send event
+                            parentCellChosen = null;
+                            targetCellChosen = null;
+                        }
                     }
                 }
 
                 window.clear(Color.BLACK);
                 window.draw(world);
                 window.display();
+
             }
+        }
+
+        private float length(Vector2f vector) {
+            return (float) Math.sqrt(vector.x*vector.x + vector.y*vector.y);
         }
     }
 
@@ -99,24 +142,26 @@ public class HelloJSFML {
 
         @Override
         public void run() {
-            // TODO
-        }
-    }
-
-    static class EventHandleRunnable implements Runnable {
-
-        @Override
-        public void run() {
-            // TODO
+            // TODO Dasha
         }
     }
 
     public static void main(String args[]) throws IOException {
+        clientTeam = Team.Player1;
+
+        Cell cell1 = new Cell(new Vector2f(100, 100), 20, Team.Player1);
+        Cell cell2 = new Cell(new Vector2f(200, 100), 20, Team.Player1);
+        Cell cell3 = new Cell(new Vector2f(100, 200), 20, Team.Player2);
+        Cell cell4 = new Cell(new Vector2f(300, 200), 20, Team.Player2);
+        Cell cell5 = new Cell(new Vector2f(150, 150), 10, Team.Neutral);
+
+        world = new World(cell1, cell2, cell3, cell4, cell5);
+
         Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());
         Thread recvThread = new Thread(new RecvRunnable());
-        Thread eventHandleThread = new Thread(new EventHandleRunnable());
         Thread updateThread = new Thread(new UpdateRunnable());
-        demoThread.start();
+        //demoThread.start();
+        drawThread.start();
     }
 }

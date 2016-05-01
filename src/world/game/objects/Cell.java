@@ -17,12 +17,19 @@ public class Cell implements Drawable, Serializable {
     private int energy;
     public Set<Tentacle> tentacleSet = new HashSet<>();
     final private Vector2f position;
+    public boolean isClicked = false;
     /**
      * enumeration {Neutral, Player1, Player2}
      */
     private Team team;
-    Font font = new Font();
-
+    static Font font = new Font();
+    {
+        try {
+            font.loadFromFile((new File("font/ArialBlack.ttf")).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * @return координаты центра клетки
      */
@@ -46,16 +53,21 @@ public class Cell implements Drawable, Serializable {
         this.energy = energy;
     }
 
+    public float getRadius() {
+        return this.energy; // TODO подобрать коэффицент
+    }
+
+    public int getTentacleLimit() {
+        if (energy < 10) return 1;
+        if (energy < 80) return 2;
+        return 3;
+    }
+
     public Cell(Vector2f position, int energy, Team team) {
         initTeamColorMap();
         this.position = position;
         this.energy = energy;
         this.team = team;
-        try {
-            font.loadFromFile((new File("font/ArialBlack.ttf")).toPath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void initTeamColorMap() {
@@ -82,6 +94,10 @@ public class Cell implements Drawable, Serializable {
         CircleShape circleShape = new CircleShape(getRadius());
         circleShape.setFillColor(teamColorMap.get(team));
         circleShape.setPosition(position);
+        if (isClicked) {
+            circleShape.setOutlineThickness(2);
+            circleShape.setOutlineColor(Color.MAGENTA);
+        }
         renderTarget.draw(circleShape);
 
         Text text = new Text((new Integer(energy)).toString(), font, 13);
@@ -91,13 +107,4 @@ public class Cell implements Drawable, Serializable {
         renderTarget.draw(text);
     }
 
-    public float getRadius() {
-        return this.energy; // TODO подобрать коэффицент
-    }
-
-    public int getTentacleLimit() {
-        if (energy < 10) return 1;
-        if (energy < 80) return 2;
-        return 3;
-    }
 }
