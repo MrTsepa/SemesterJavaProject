@@ -43,7 +43,7 @@ public class UpdateRunnable implements Runnable {
 
         TentaclesMovement() {
             velocityMap.put(Tentacle.State.MovingForward, 5f);
-            velocityMap.put(Tentacle.State.MovingBackward, -1*10f);
+            velocityMap.put(Tentacle.State.IsDestroyed, -1*10f);
         }
 
         @Override
@@ -51,26 +51,88 @@ public class UpdateRunnable implements Runnable {
             while (true) {
                 for (Cell cell : world.cellArray) {
                     for (Tentacle tentacle : cell.tentacleSet) {
-                        if (tentacle.state != Tentacle.State.Still) {
-                            float velocity = velocityMap.get(tentacle.state);
+                        if (tentacle.state == Tentacle.State.Still)
+                            continue;
+
+                        if (tentacle.state == Tentacle.State.MovingForward) {
+                            float velocity = velocityMap.get(Tentacle.State.MovingForward);
                             float newDistancePart = tentacle.getDistancePart() +
                                     velocity / tentacle.getDistance();
-                            float collisionPoint = 1;
-                            if (tentacle.targetCell.tentacleExists(cell)) {
-                                collisionPoint = 0.5f;
+                            if (!tentacle.isConfronted()) {
+                                if (newDistancePart > 1) {
+                                    tentacle.setDistancePart(1);
+                                    tentacle.state = Tentacle.State.Still;
+                                } else {
+                                    tentacle.setDistancePart(newDistancePart);
+                                }
                             }
-
-                            if (newDistancePart > collisionPoint) {
-                                tentacle.setDistancePart(collisionPoint);
-                                if (tentacle.targetCell.tentacleExists(cell)) {
-                                    tentacle.targetCell.getTentacle(cell).setDistancePart(0.5f);
+                            else {
+                                if (newDistancePart > (1 - tentacle.getConfronting().getDistancePart())) {
+                                    tentacle.setDistancePart(1 - tentacle.getConfronting().getDistancePart());
+                                    tentacle.state = Tentacle.State.IsCollided;
+                                    tentacle.getConfronting().state = Tentacle.State.IsCollided;
                                 }
-                                tentacle.state = Tentacle.State.Still;
-                            } else {
+                                else {
+                                    tentacle.setDistancePart(newDistancePart);
+                                }
+                            }
+                        }
+                        if (tentacle.state == Tentacle.State.IsCollided) {
+                            float velocity = velocityMap.get(Tentacle.State.MovingForward);
+                            if (tentacle.getDistancePart() > 0.5) {
+                                float newDistancePart = tentacle.getDistancePart() -
+                                        velocity / tentacle.getDistance();
+                                if (newDistancePart < 0.5) {
+                                    tentacle.setDistancePart(0.5f);
+                                    tentacle.state = Tentacle.State.Still;
+                                }
+                                else {
+                                    tentacle.setDistancePart(newDistancePart);
+                                }
+                            }
+                            if (tentacle.getDistancePart() < 0.5) {
+                                float newDistancePart = tentacle.getDistancePart() +
+                                        velocity / tentacle.getDistance();
+                                if (newDistancePart > 0.5) {
+                                    tentacle.setDistancePart(0.5f);
+                                    tentacle.state = Tentacle.State.Still;
+                                }
+                                else {
+                                    tentacle.setDistancePart(newDistancePart);
+                                }
+                            }
+                        }
+                        if (tentacle.state == Tentacle.State.IsDestroyed) {
+                            float velocity = velocityMap.get(Tentacle.State.IsDestroyed);
+                            float newDistancePart = tentacle.getDistancePart() -
+                                    velocity / tentacle.getDistance();
+                            if (newDistancePart < 0) {
+                                cell.tentacleSet.remove(tentacle);
+                            }
+                            else {
                                 tentacle.setDistancePart(newDistancePart);
-                                if (tentacle.targetCell.tentacleExists(cell)) {
-                                    tentacle.targetCell.getTentacle(cell).setDistancePart(1-newDistancePart);
-                                }
+                            }
+                        }
+                        if (tentacle.state == Tentacle.State.IsCutted) {
+                            float velocity = velocityMap.get(Tentacle.State.IsDestroyed);
+                            float newDistancePart = tentacle.getDistancePart() -
+                                    velocity / tentacle.getDistance();
+                            float newCuttedPart = tentacle.getCuttedDistancePart() -
+                                    velocity / tentacle.getDistance();
+                            if (newDistancePart < 0) {
+                                tentacle.setDistancePart(0);
+                            }
+                            else {
+                                tentacle.setDistancePart(newDistancePart);
+                            }
+                            if (newCuttedPart > 1) {
+                                tentacle.setCuttedDistancePart(1);
+                            }
+                            else {
+                                tentacle.setCuttedDistancePart(newCuttedPart);
+                            }
+                            if (tentacle.getDistancePart() <= 0.01f && tentacle.getCuttedDistancePart() >= 0.99f) {
+                                cell.tentacleSet.remove(tentacle);
                             }
                         }
                     }

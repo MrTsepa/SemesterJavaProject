@@ -11,4 +11,7 @@ public class Event implements Serializable {
     public TentacleDestroyEvent asTentacleDestroyEvent() throws Exception {
         throw new Exception();
     }
+    public TentacleCutEvent asTentacleCutEvent() throws Exception {
+        throw new Exception();
+    }
 }

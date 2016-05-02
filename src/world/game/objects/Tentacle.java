@@ -23,6 +23,15 @@ public class Tentacle implements Drawable, Serializable {
         this.distancePart = distancePart;
     }
 
+    private float cuttedDistancePart = 1;
+    public float getCuttedDistancePart() {
+        return cuttedDistancePart;
+    }
+    public void setCuttedDistancePart(float cuttedDistancePart) {
+        this.cuttedDistancePart = cuttedDistancePart;
+    }
+
+
     static final float triangleHeight = 10;
     private Integer triangleCount = 0;
     public Integer getTriangleCount() {
@@ -30,12 +39,20 @@ public class Tentacle implements Drawable, Serializable {
     }
     public HashSet<Integer> yellowTriangles = new HashSet<>();
 
-    public enum State { MovingForward, MovingBackward, Still }
+    public enum State { MovingForward, IsDestroyed,  Still , IsCutted, IsCollided  }
     public State state  = State.MovingForward;
 
     public Tentacle(Cell parentCell, Cell targetCell) {
         this.parentCell = parentCell;
         this.targetCell = targetCell;
+    }
+
+    public boolean isConfronted() {
+        return targetCell.tentacleExists(parentCell);
+    }
+
+    public Tentacle getConfronting() {
+        return targetCell.getTentacle(parentCell);
     }
 
     public float getDistance() {
@@ -67,13 +84,13 @@ public class Tentacle implements Drawable, Serializable {
         Vector2f targetBorderPosition = Vector2f.sub(targetCell.getPosition(),
                 Vector2f.mul(normalizedDistanceVector, targetCell.getRadius()));
         distanceVector = Vector2f.sub(targetBorderPosition, parentBorderPosition);
-        Vector2f headPosition = Vector2f.add(parentBorderPosition, Vector2f.mul(distanceVector, distancePart));
+        Vector2f headPositionVector = Vector2f.add(parentBorderPosition, Vector2f.mul(distanceVector, distancePart));
         triangleCount = 0;
         while (true) {
-            ConvexShape polygon = new ConvexShape(headPosition,
-                    Vector2f.add(Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
+            ConvexShape polygon = new ConvexShape(headPositionVector,
+                    Vector2f.add(Vector2f.sub(headPositionVector, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
                             Vector2f.mul(normalizedOrthogonalVector, triangleHeight/2)),
-                    Vector2f.sub(Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
+                    Vector2f.sub(Vector2f.sub(headPositionVector, Vector2f.mul(normalizedDistanceVector, triangleHeight)),
                             Vector2f.mul(normalizedOrthogonalVector, triangleHeight/2))
             );
             if (yellowTriangles.contains(triangleCount))
@@ -81,11 +98,35 @@ public class Tentacle implements Drawable, Serializable {
             else
                 polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
             renderTarget.draw(polygon);
-            if (Float.compare(length(Vector2f.sub(headPosition, parentBorderPosition)), triangleHeight) < 0) {
+            if (Float.compare(length(Vector2f.sub(headPositionVector, parentBorderPosition)), triangleHeight) < 0) {
                 break;
             }
-            headPosition = Vector2f.sub(headPosition, Vector2f.mul(normalizedDistanceVector, triangleHeight));
+            headPositionVector = Vector2f.sub(headPositionVector,
+                    Vector2f.mul(normalizedDistanceVector, triangleHeight));
             triangleCount++;
+        }
+        if (this.state == State.IsCutted) {
+            Vector2f tailPositionVector = Vector2f.add(parentBorderPosition,
+                    Vector2f.mul(distanceVector, cuttedDistancePart));
+            tailPositionVector = Vector2f.add(tailPositionVector,
+                    Vector2f.mul(normalizedDistanceVector, triangleHeight));
+            while (true) {
+                ConvexShape polygon = new ConvexShape(tailPositionVector,
+                        Vector2f.add(Vector2f.sub(tailPositionVector,
+                                Vector2f.mul(normalizedDistanceVector, triangleHeight)),
+                                Vector2f.mul(normalizedOrthogonalVector, triangleHeight/2)),
+                        Vector2f.sub(Vector2f.sub(tailPositionVector,
+                                Vector2f.mul(normalizedDistanceVector, triangleHeight)),
+                                Vector2f.mul(normalizedOrthogonalVector, triangleHeight/2))
+                );
+                polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
+                renderTarget.draw(polygon);
+                if (Float.compare(length(Vector2f.sub(tailPositionVector, targetBorderPosition)), triangleHeight) < 0) {
+                    break;
+                }
+                tailPositionVector = Vector2f.add(tailPositionVector,
+                        Vector2f.mul(normalizedDistanceVector, triangleHeight));
+            }
         }
     }
 
