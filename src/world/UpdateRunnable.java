@@ -48,7 +48,7 @@ public class UpdateRunnable implements Runnable {
         HashMap<Tentacle.State, Float> velocityMap = new HashMap<>();
 
         TentaclesMovement() {
-            velocityMap.put(Tentacle.State.MovingForward, 1f);
+            velocityMap.put(Tentacle.State.MovingForward, 5f);
             velocityMap.put(Tentacle.State.IsDestroyed, 10f);
         }
 
