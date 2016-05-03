@@ -123,7 +123,7 @@ public class UpdateRunnable implements Runnable {
                             float velocity = velocityMap.get(Tentacle.State.IsDestroyed);
                             float newDistancePart = tentacle.getDistancePart() -
                                     velocity / tentacle.getDistance();
-                            float newCuttedPart = tentacle.getCuttedDistancePart() -
+                            float newCuttedPart = tentacle.getCuttedDistancePart() +
                                     velocity / tentacle.getDistance();
                             if (newDistancePart < 0) {
                                 tentacle.setDistancePart(0);

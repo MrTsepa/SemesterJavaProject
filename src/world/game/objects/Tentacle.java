@@ -124,7 +124,7 @@ public class Tentacle implements Drawable, Serializable {
                 );
                 polygon.setFillColor(Cell.teamColorMap.get(parentCell.getTeam()));
                 renderTarget.draw(polygon);
-                if (Float.compare(length(Vector2f.sub(tailPositionVector, targetBorderPosition)), triangleHeight) < 0) {
+                if (length(tailPositionVector, targetCell.getPosition()) < targetCell.getRadius()) {
                     break;
                 }
                 tailPositionVector = Vector2f.add(tailPositionVector,

@@ -141,14 +141,29 @@ public class HelloJSFML {
                         }
                     }
                 }
-                if (tentacleClicked != null) {
-                    tentacleClicked.state = Tentacle.State.IsDestroyed;
+                if (tentacleClicked != null && cellClicked == null) {
+                    if (tentacleClicked.isConfronted() == false) {
+                        if (tentacleClicked.state == Tentacle.State.MovingForward) {
+                            world.game.events.Event event =
+                                    new TentacleDestroyEvent(tentacleClicked);
+                            // TODO Dasha send event
+                            // пока что будет создавтаься локально
+                            tentacleClicked.state = Tentacle.State.IsDestroyed;
+                        }
+                        if (tentacleClicked.state == Tentacle.State.Still) {
+                            world.game.events.Event event =
+                                    new TentacleCutEvent(tentacleClicked, partTentacleClicked);
+                            // TODO Dasha send event
+                            // пока что будет создавтаься локально
+                            tentacleClicked.state = Tentacle.State.IsCutted;
+                            tentacleClicked.setCuttedDistancePart(partTentacleClicked);
+                            tentacleClicked.setDistancePart(partTentacleClicked);
+                        }
+                    }
                 }
 
                 window.clear(Color.BLACK);
-                synchronized (world) {
-                    window.draw(world);
-                }
+                window.draw(world);
                 window.display();
 
             }
@@ -175,8 +190,9 @@ public class HelloJSFML {
         Cell cell3 = new Cell(new Vector2f(100, 200), 20, Team.Player2);
         Cell cell4 = new Cell(new Vector2f(300, 200), 20, Team.Player2);
         Cell cell5 = new Cell(new Vector2f(150, 150), 10, Team.Neutral);
+        Cell cell6 = new Cell(new Vector2f(400, 400), 20, Team.Player1);
 
-        world = new World(cell1, cell2, cell3, cell4, cell5);
+        world = new World(cell1, cell2, cell3, cell4, cell5, cell6);
 
         Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());

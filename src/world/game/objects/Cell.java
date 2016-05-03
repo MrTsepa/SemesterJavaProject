@@ -23,7 +23,7 @@ public class Cell implements Drawable, Serializable {
      */
     private Team team;
     static Font font = new Font();
-    {
+    static {
         try {
             font.loadFromFile((new File("font/ArialBlack.ttf")).toPath());
         } catch (IOException e) {
