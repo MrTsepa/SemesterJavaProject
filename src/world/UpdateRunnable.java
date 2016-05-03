@@ -18,6 +18,9 @@ public class UpdateRunnable implements Runnable {
         this.world = world;
     }
 
+    /**
+     * Отвечает за прибавление клеткам энергии
+     */
     private class CellEnergyIncrease implements Runnable {
 
         @Override
@@ -37,13 +40,16 @@ public class UpdateRunnable implements Runnable {
         }
     }
 
+    /**
+     * Отвечает за движение щупалец
+     */
     class TentaclesMovement implements Runnable {
 
         HashMap<Tentacle.State, Float> velocityMap = new HashMap<>();
 
         TentaclesMovement() {
             velocityMap.put(Tentacle.State.MovingForward, 5f);
-            velocityMap.put(Tentacle.State.IsDestroyed, -1*10f);
+            velocityMap.put(Tentacle.State.IsDestroyed, 10f);
         }
 
         @Override
@@ -146,6 +152,9 @@ public class UpdateRunnable implements Runnable {
         }
     }
 
+    /**
+     * Отвечает за передачу энергии щупальцами
+     */
     class YellowTrianglesMovement implements Runnable {
 
         @Override

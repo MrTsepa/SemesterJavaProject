@@ -9,12 +9,14 @@ import org.jsfml.system.Vector2i;
 import org.jsfml.window.VideoMode;
 import org.jsfml.window.event.Event;
 
+import utils.Geometry;
 import world.UpdateRunnable;
 import world.World;
 import world.game.Team;
 import world.game.objects.Cell;
 import world.game.events.*;
 import world.game.objects.Tentacle;
+import static utils.Geometry.findIntersectionPart;
 
 public class HelloJSFML {
 
@@ -90,17 +92,29 @@ public class HelloJSFML {
 
             while (window.isOpen()) {
                 Cell cellClicked = null;
+                Tentacle tentacleClicked = null;
+                Float partTentacleClicked = null;
                 for (Event event : window.pollEvents()) {
                     if (event.type == Event.Type.CLOSED) {
                         window.close();
                     }
                     if (event.type == Event.Type.MOUSE_BUTTON_PRESSED) {
                         Vector2i mousePosition = event.asMouseEvent().position;
-                        synchronized (world) {
-                            for (Cell cell : world.cellArray) {
-                                if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
-                                        < cell.getRadius()) {
-                                    cellClicked = cell;
+                        for (Cell cell : world.cellArray) {
+                            if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
+                                    < cell.getRadius()) {
+                                cellClicked = cell;
+                            }
+                        }
+                        for (Cell cell : world.cellArray) {
+                            for (Tentacle tentacle : cell.tentacleSet) {
+                                Float part = findIntersectionPart(new Geometry.Circle(mousePosition, 5),
+                                        new Geometry.Line(tentacle.parentCell.getPosition(),
+                                                tentacle.targetCell.getPosition()));
+                                if (part != null) {
+                                    tentacleClicked = tentacle;
+                                    partTentacleClicked = part;
+                                    break;
                                 }
                             }
                         }
@@ -126,6 +140,9 @@ public class HelloJSFML {
                             parentCellChosen = null;
                         }
                     }
+                }
+                if (tentacleClicked != null) {
+                    tentacleClicked.state = Tentacle.State.IsDestroyed;
                 }
 
                 window.clear(Color.BLACK);

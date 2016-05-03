@@ -6,6 +6,9 @@ import org.jsfml.system.Vector2f;
 import java.io.Serializable;
 import java.util.HashSet;
 
+import static utils.Geometry.length;
+import static utils.Geometry.normalize;
+
 public class Tentacle implements Drawable, Serializable {
 
     public Cell parentCell;
@@ -128,13 +131,5 @@ public class Tentacle implements Drawable, Serializable {
                         Vector2f.mul(normalizedDistanceVector, triangleHeight));
             }
         }
-    }
-
-    private Vector2f normalize(Vector2f vector) {
-        return Vector2f.div(vector, length(vector));
-    }
-
-    private float length(Vector2f vector) {
-        return (float) Math.sqrt(vector.x*vector.x + vector.y*vector.y);
     }
 }
