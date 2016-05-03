@@ -42,9 +42,9 @@ public class Geometry {
      */
     public static Float findIntersectionPart(Circle circle, Line line) {
         Vector2f point = line.startPosition;
-        for (float part = 0; part < 1f; part += 0.05f) {
+        for (float part = 0; part < 1f; part += 0.02f) {
             point = Vector2f.add(point, Vector2f.mul(line.getNormalizedVector(),
-                    line.getLength()*0.05f));
+                    line.getLength()*0.02f));
             if (length(point, new Vector2f(circle.position)) < circle.radius) {
                 return part;
             }
