@@ -43,7 +43,14 @@ public class Tentacle implements Drawable, Serializable {
     public HashSet<Integer> yellowTriangles = new HashSet<>();
 
     public enum State { MovingForward, IsDestroyed,  Still , IsCutted, IsCollided  }
-    public State state  = State.MovingForward;
+    private State state  = State.MovingForward;
+    public synchronized State getState() {
+        return state;
+    }
+    public synchronized void setState(State state) {
+        this.state = state;
+    }
+
 
     public Tentacle(Cell parentCell, Cell targetCell) {
         this.parentCell = parentCell;

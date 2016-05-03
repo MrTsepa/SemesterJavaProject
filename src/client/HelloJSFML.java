@@ -109,9 +109,14 @@ public class HelloJSFML {
                         for (Cell cell : world.cellArray) {
                             for (Tentacle tentacle : cell.tentacleSet) {
                                 Float part = findIntersectionPart(new Geometry.Circle(mousePosition, 5),
-                                        new Geometry.Line(tentacle.parentCell.getPosition(),
-                                                tentacle.targetCell.getPosition()));
-                                if (part != null) {
+                                        new Geometry.Line(
+                                                Vector2f.add(tentacle.parentCell.getPosition(),
+                                                        Vector2f.mul(tentacle.getNormalizedDistanceVector(),
+                                                                tentacle.parentCell.getRadius())),
+                                                Vector2f.sub(tentacle.targetCell.getPosition(),
+                                                        Vector2f.mul(tentacle.getNormalizedDistanceVector(),
+                                                                tentacle.targetCell.getRadius()))));
+                                if (part != null && part < tentacle.getDistancePart()) {
                                     tentacleClicked = tentacle;
                                     partTentacleClicked = part;
                                     break;
@@ -143,21 +148,55 @@ public class HelloJSFML {
                 }
                 if (tentacleClicked != null && cellClicked == null) {
                     if (tentacleClicked.isConfronted() == false) {
-                        if (tentacleClicked.state == Tentacle.State.MovingForward) {
-                            world.game.events.Event event =
-                                    new TentacleDestroyEvent(tentacleClicked);
-                            // TODO Dasha send event
-                            // пока что будет создавтаься локально
-                            tentacleClicked.state = Tentacle.State.IsDestroyed;
+                        if (tentacleClicked.getState() == Tentacle.State.MovingForward) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(tentacleClicked);
+                                // TODO Dasha send event
+                                // пока что будет создавтаься локально
+                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
+                            }
                         }
-                        if (tentacleClicked.state == Tentacle.State.Still) {
+                        if (tentacleClicked.getState() == Tentacle.State.Still) {
                             world.game.events.Event event =
                                     new TentacleCutEvent(tentacleClicked, partTentacleClicked);
                             // TODO Dasha send event
                             // пока что будет создавтаься локально
-                            tentacleClicked.state = Tentacle.State.IsCutted;
+                            tentacleClicked.setState(Tentacle.State.IsCutted);
                             tentacleClicked.setCuttedDistancePart(partTentacleClicked);
                             tentacleClicked.setDistancePart(partTentacleClicked);
+                        }
+                    }
+                    if (tentacleClicked.isConfronted() == true) {
+                        if (tentacleClicked.getState() == Tentacle.State.MovingForward) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(tentacleClicked);
+                                // TODO Dasha send event
+                                // пока что будет создавтаься локально
+                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
+                            }
+                        } // немного дублированного кода
+                        if (tentacleClicked.getState() == Tentacle.State.IsCollided) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(tentacleClicked);
+                                // TODO Dasha send event
+                                // пока что будет создавтаься локально
+                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
+                                tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
+                            }
+                        }
+                        if (tentacleClicked.getState() == Tentacle.State.Still) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(tentacleClicked);
+                                // TODO Dasha send event
+                                // пока что будет создавтаься локально
+                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
+                                tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
+                            }
+
                         }
                     }
                 }

@@ -16,6 +16,20 @@ public class Cell implements Drawable, Serializable {
     static HashMap<Team, Color> teamColorMap = new HashMap<>();
     private int energy;
     public Set<Tentacle> tentacleSet = new HashSet<>();
+    public synchronized void addTentacle(Cell targetCell) {
+        if (tentacleSet.size() < getTentacleLimit()) {
+            Tentacle tentacle = new Tentacle(this, targetCell);
+            tentacleSet.add(tentacle);
+        }
+        // TODO else
+    }
+    public synchronized void addTentacle(Tentacle tentacle) {
+        tentacleSet.add(tentacle);
+    }
+    public synchronized void removeTentacle(Tentacle tentacle) {
+        tentacleSet.remove(tentacle);
+    }
+
     final private Vector2f position;
     public boolean isClicked = false;
     /**
@@ -76,13 +90,6 @@ public class Cell implements Drawable, Serializable {
         teamColorMap.put(Team.Player2, Color.RED);
     }
 
-    public void addTentacle(Cell targetCell) {
-        if (tentacleSet.size() < getTentacleLimit()) {
-            Tentacle tentacle = new Tentacle(this, targetCell);
-            tentacleSet.add(tentacle);
-        }
-        // TODO else
-    }
 
     public boolean tentacleExists(Cell targetCell) {
         boolean flag = false;
