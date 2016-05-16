@@ -1,27 +1,43 @@
-package server;
 
 import java.io.BufferedInputStream;
-import java.io.*;
 
-import world.*;
+
+
+import java.io.*;
+import org.jsfml.system.Vector2f;
+import world.World;
+import world.game.objects.Cell;
+import world.game.Team;
 
 public class Service {
-    World ourWorld = new World();
+ 
+    Cell cell1 = new Cell(new Vector2f(100, 100), 20, Team.Player1);
+    Cell cell2 = new Cell(new Vector2f(200, 100), 20, Team.Player1);
+    Cell cell3 = new Cell(new Vector2f(100, 200), 20, Team.Player2);
+    Cell cell4 = new Cell(new Vector2f(300, 200), 20, Team.Player2);
+    Cell cell5 = new Cell(new Vector2f(150, 150), 10, Team.Neutral);
+    Cell cell6 = new Cell(new Vector2f(400, 400), 20, Team.Player1);
+
+    world.World world = new world.World(cell1, cell2, cell3, cell4, cell5, cell6);
+    
     public int id = 0;
     public int nextId() {return id++;}
     
-    public void serve(InputStream inputStream, OutputStream outputStream) throws IOException{
+    public void serve(InputStream i, OutputStream o) throws IOException{
+        System.out.println("in serve");
         // настраиваем потоки
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-        ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
-         
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+        
+        //ObjectInputStream inObject = new ObjectInputStream(i);
+        System.out.println("Objectstream in created " );
+        
+        ObjectOutputStream outObject = new ObjectOutputStream(o);
         
         //записываем новый мир и отправляем его
         //ourWorld = (World) inObject;
-        objectOutputStream.writeObject(ourWorld);
-        objectOutputStream.writeObject(nextId());
+        System.out.println("Ready to serve" );
+        outObject.writeObject(world);
+        System.out.println("world sent");
+       //s outObject.writeObject(nextId());
         
     }
     
