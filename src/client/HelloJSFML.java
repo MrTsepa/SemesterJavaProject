@@ -2,6 +2,8 @@ package client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.net.*;
+import java.io.*;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
@@ -220,8 +222,41 @@ public class HelloJSFML {
             // TODO Dasha
         }
     }
+    public static class SocketConnection {
+    static Socket socket;
+        public SocketConnection() throws IOException {
+         InetAddress addr = InetAddress.getByName(null);
 
-    public static void main(String args[]) throws IOException, InterruptedException {
+            try {
+                System.out.println("addr = " + addr);
+                socket = new Socket(addr, 8080);
+                System.out.println("socket = " + socket);
+            }catch (IOException e) {
+                System.out.println("Can't accept");
+                System.exit(-1);
+            }finally {
+                System.out.println("closing...");
+            
+            }
+        }
+        public static void CloseSocket()
+        {
+            try{socket.close();} 
+            catch(IOException e){}
+        
+        }
+        public  static World ReadStream() throws IOException, ClassNotFoundException{
+            InputStream sin = socket.getInputStream();
+            OutputStream sout = socket.getOutputStream();
+            
+            BufferedInputStream in = new BufferedInputStream(sin);
+            ObjectInputStream inObject = new ObjectInputStream(in);
+            
+            return (World) inObject.readObject();
+        }      
+    }
+
+    public static void main(String args[]) throws IOException, InterruptedException, ClassNotFoundException {
         clientTeam = Team.Player1;
 
         Cell cell1 = new Cell(new Vector2f(100, 100), 20, Team.Player1);
@@ -231,8 +266,10 @@ public class HelloJSFML {
         Cell cell5 = new Cell(new Vector2f(150, 150), 10, Team.Neutral);
         Cell cell6 = new Cell(new Vector2f(400, 400), 20, Team.Player1);
 
-        world = new World(cell1, cell2, cell3, cell4, cell5, cell6);
-
+        world = new World();
+        SocketConnection client = new SocketConnection();
+        world = client.ReadStream();       //new World(cell1, cell2, cell3, cell4, cell5, cell6);
+ 
         Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());
         Thread recvThread = new Thread(new RecvRunnable());
