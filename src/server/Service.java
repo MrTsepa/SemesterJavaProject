@@ -1,7 +1,7 @@
+package server;
+
 
 import java.io.BufferedInputStream;
-
-
 
 import java.io.*;
 import org.jsfml.system.Vector2f;
@@ -36,8 +36,8 @@ public class Service{
     public synchronized int nextId() {
         return id++;
     }
-   
-    public void sendWorld(InputStream i, OutputStream o) throws IOException{
+
+    public void sendWorld(OutputStream o) throws IOException{
         System.out.println("in serve");
         System.out.println("Objectstream in created " );
         ObjectOutputStream outObject = new ObjectOutputStream(o);
@@ -46,15 +46,11 @@ public class Service{
         outObject.writeObject(world);
         System.out.println("world sent");
     }
-    public void readEvent(InputStream i, OutputStream o) throws IOException, ClassNotFoundException{
+    public void readEvent(InputStream i) throws IOException, ClassNotFoundException{
         ObjectInputStream inObject = new ObjectInputStream(i);
-        ObjectOutputStream outObject = new ObjectOutputStream(o);
         while(true){
             Event event = (Event) inObject.readObject();
-            outObject.writeObject(event);
-        }    
-        
+        }
     }
-    
 }
 

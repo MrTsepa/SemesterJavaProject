@@ -2,10 +2,6 @@ package client;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.net.*;
-import java.io.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
@@ -21,12 +17,11 @@ import world.game.objects.Cell;
 import world.game.events.*;
 import world.game.objects.Tentacle;
 import static utils.Geometry.findIntersectionPart;
-
+import static utils.Geometry.length;
 public class HelloJSFML {
 
     static RenderWindow window = new RenderWindow();
     static World world;
-    static Socket socket;
 
     static Team clientTeam;
 
@@ -244,59 +239,13 @@ public class HelloJSFML {
             return (float) Math.sqrt(vector.x*vector.x + vector.y*vector.y);
         }
     }
-
     
-    
-    public static class SocketConnection {
-   
-        public SocketConnection(String address) throws IOException {
-         InetAddress addr = InetAddress.getByName(address);
-
-            try {
-                System.out.println("addr = " + addr);
-                socket = new Socket(addr, 8080);
-                System.out.println("socket = " + socket);
-            }catch (IOException e) {
-                System.out.println("Can't accept");
-                System.exit(-1);
-            }finally {
-                System.out.println("closing...");
-            
-            }
-        }
-        public static void CloseSocket()
-        {
-            try{socket.close();} 
-            catch(IOException e){}
-        
-        }
-        public static Object readStream() throws IOException, ClassNotFoundException{
-            InputStream sin = socket.getInputStream();
-            OutputStream sout = socket.getOutputStream();
-            
-            BufferedInputStream in = new BufferedInputStream(sin);
-            ObjectInputStream inObject = new ObjectInputStream(in);
-            
-            return inObject.readObject();
-        }     
-        public static void writeStream(Object object) throws IOException{
-            ObjectOutputStream outObject = new ObjectOutputStream(socket.getOutputStream());
-            outObject.writeObject(object);
-            
-        }
-    }
-    static class RecvRunnable implements Runnable{
-        //World world;
-        SocketConnection socket;
+    static class RecvRunnable implements Runnable {
+        SocketConnection socketConnection;
         private RecvRunnable(SocketConnection socket) {
-          //  this.world = world;
-            this.socket = socket;
+            this.socketConnection = socket;
         }
-        
-        private float length(Vector2f vector) {
-            return (float) Math.sqrt(vector.x*vector.x + vector.y*vector.y);
-        }
-        
+
         public void drawEvent(RenderWindow window, Event event){
             Cell cellClicked = null;
             Tentacle tentacleClicked = null;

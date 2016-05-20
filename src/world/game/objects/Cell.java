@@ -33,7 +33,6 @@ public class Cell implements Drawable, Serializable {
     final private Vector2f position;
     public boolean isClicked = false;
     /**
-     * enumeration {Neutral, Player1, Player2}
      */
     private Team team;
     static Font font = new Font();
@@ -86,8 +85,8 @@ public class Cell implements Drawable, Serializable {
 
     private void initTeamColorMap() {
         teamColorMap.put(Team.Neutral, new Color(204, 204, 204)); // Grey
-        teamColorMap.put(Team.Player1, Color.GREEN);
-        teamColorMap.put(Team.Player2, Color.RED);
+        teamColorMap.put(Team.Player1, new Color(255, 151, 10)); // magic numbers
+        teamColorMap.put(Team.Player2, Color.CYAN);
     }
 
 

@@ -1,3 +1,4 @@
+package server;
 
 import java.io.*;
 import java.net.*;
@@ -13,6 +14,7 @@ public class Server {
         int port = 8080;
         s.addService(new Service(), port);
     }
+
     Map<Integer, Listener> services; // связывает порты с объектами Listener
     Set<Connection> connections; // текущие подключения
     int maxConnections; // максимальное количестов подклчений
@@ -171,7 +173,7 @@ public class Server {
                
                 System.out.println("Serve started");
                
-                service.sendWorld(in, out);
+                service.sendWorld(out);
             }
             catch(IOException e) {}
             finally{endConnection(this);}
@@ -188,11 +190,10 @@ public class Server {
         public void run(){
             try{
                 InputStream in = socket.getInputStream();
-                OutputStream out = socket.getOutputStream();
-               
+
                 System.out.println("Serve 2 started");
                
-                service.readEvent(in, out);
+                service.readEvent(in);
             }
             catch(IOException e) {} 
             catch (ClassNotFoundException ex) {}

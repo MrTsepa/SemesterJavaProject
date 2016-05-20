@@ -1,7 +1,5 @@
 package world;
 
-import org.jsfml.graphics.FloatRect;
-import org.jsfml.system.Vector2f;
 import world.game.objects.Cell;
 import world.game.objects.Tentacle;
 

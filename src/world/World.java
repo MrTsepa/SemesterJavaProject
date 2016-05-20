@@ -9,6 +9,7 @@ import java.io.Serializable;
 
 public class World implements Drawable, Serializable {
     final public Cell[] cellArray;
+    public int playerNumber;
 
     public World(Cell... cells) {
         cellArray = cells;

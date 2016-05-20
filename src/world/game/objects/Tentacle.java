@@ -42,7 +42,7 @@ public class Tentacle implements Drawable, Serializable {
     }
     public HashSet<Integer> yellowTriangles = new HashSet<>();
 
-    public enum State { MovingForward, IsDestroyed,  Still , IsCutted, IsCollided  }
+    public enum State { MovingForward, IsDestroyed, Still, IsCutted, IsCollided  }
     private State state  = State.MovingForward;
     public synchronized State getState() {
         return state;
