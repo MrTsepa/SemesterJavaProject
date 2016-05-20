@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.net.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
@@ -24,6 +26,7 @@ public class HelloJSFML {
 
     static RenderWindow window = new RenderWindow();
     static World world;
+    static Socket socket;
 
     static Team clientTeam;
 
@@ -85,6 +88,8 @@ public class HelloJSFML {
     }
 
     static class DrawRunnable implements Runnable {
+        
+        
         @Override
         public void run() {
             window.create(new VideoMode(640, 480), "Tentacle Wars");
@@ -96,6 +101,7 @@ public class HelloJSFML {
                 Cell cellClicked = null;
                 Tentacle tentacleClicked = null;
                 Float partTentacleClicked = null;
+                
                 for (Event event : window.pollEvents()) {
                     if (event.type == Event.Type.CLOSED) {
                         window.close();
@@ -141,6 +147,11 @@ public class HelloJSFML {
                             parentCellChosen.isClicked = false;
                             world.game.events.Event event =
                                     new TentacleCreateEvent(parentCellChosen, cellClicked);
+                            try {
+                                SocketConnection.writeStream(event);
+                            } catch (IOException ex) {
+                                System.out.println("event didn't send");
+                            }
                             // TODO Dasha send event
                             // пока что будет создавтаься локально
                             parentCellChosen.tentacleSet.add(new Tentacle(parentCellChosen, cellClicked));
@@ -154,6 +165,11 @@ public class HelloJSFML {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
                                         new TentacleDestroyEvent(tentacleClicked);
+                                try {
+                                    SocketConnection.writeStream(event);
+                                } catch (IOException ex) {
+                                    System.out.println("event didn't send");
+                                }
                                 // TODO Dasha send event
                                 // пока что будет создавтаься локально
                                 tentacleClicked.setState(Tentacle.State.IsDestroyed);
@@ -162,6 +178,11 @@ public class HelloJSFML {
                         if (tentacleClicked.getState() == Tentacle.State.Still) {
                             world.game.events.Event event =
                                     new TentacleCutEvent(tentacleClicked, partTentacleClicked);
+                            try {
+                                SocketConnection.writeStream(event);
+                            } catch (IOException ex) {
+                                System.out.println("event didn't send");
+                            }
                             // TODO Dasha send event
                             // пока что будет создавтаься локально
                             tentacleClicked.setState(Tentacle.State.IsCutted);
@@ -174,8 +195,11 @@ public class HelloJSFML {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
                                         new TentacleDestroyEvent(tentacleClicked);
-                                // TODO Dasha send event
-                                // пока что будет создавтаься локально
+                            try {
+                                SocketConnection.writeStream(event);
+                            } catch (IOException ex) {
+                                System.out.println("event didn't send");
+                            }
                                 tentacleClicked.setState(Tentacle.State.IsDestroyed);
                             }
                         } // немного дублированного кода
@@ -183,8 +207,11 @@ public class HelloJSFML {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
                                         new TentacleDestroyEvent(tentacleClicked);
-                                // TODO Dasha send event
-                                // пока что будет создавтаься локально
+                                 try {
+                                     SocketConnection.writeStream(event);
+                                 } catch (IOException ex) {
+                                     System.out.println("event didn't send");
+                                 }
                                 tentacleClicked.setState(Tentacle.State.IsDestroyed);
                                 tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
                             }
@@ -193,8 +220,11 @@ public class HelloJSFML {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
                                         new TentacleDestroyEvent(tentacleClicked);
-                                // TODO Dasha send event
-                                // пока что будет создавтаься локально
+                                try {
+                                    SocketConnection.writeStream(event);
+                                } catch (IOException ex) {
+                                    System.out.println("event didn't send");
+                                }
                                 tentacleClicked.setState(Tentacle.State.IsDestroyed);
                                 tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
                             }
@@ -215,17 +245,12 @@ public class HelloJSFML {
         }
     }
 
-    static class RecvRunnable implements Runnable {
-
-        @Override
-        public void run() {
-            // TODO Dasha
-        }
-    }
+    
+    
     public static class SocketConnection {
-    static Socket socket;
-        public SocketConnection() throws IOException {
-         InetAddress addr = InetAddress.getByName(null);
+   
+        public SocketConnection(String address) throws IOException {
+         InetAddress addr = InetAddress.getByName(address);
 
             try {
                 System.out.println("addr = " + addr);
@@ -245,17 +270,101 @@ public class HelloJSFML {
             catch(IOException e){}
         
         }
-        public  static World ReadStream() throws IOException, ClassNotFoundException{
+        public static Object readStream() throws IOException, ClassNotFoundException{
             InputStream sin = socket.getInputStream();
             OutputStream sout = socket.getOutputStream();
             
             BufferedInputStream in = new BufferedInputStream(sin);
             ObjectInputStream inObject = new ObjectInputStream(in);
             
-            return (World) inObject.readObject();
-        }      
+            return inObject.readObject();
+        }     
+        public static void writeStream(Object object) throws IOException{
+            ObjectOutputStream outObject = new ObjectOutputStream(socket.getOutputStream());
+            outObject.writeObject(object);
+            
+        }
     }
-
+    static class RecvRunnable implements Runnable{
+        //World world;
+        SocketConnection socket;
+        private RecvRunnable(SocketConnection socket) {
+          //  this.world = world;
+            this.socket = socket;
+        }
+        
+        private float length(Vector2f vector) {
+            return (float) Math.sqrt(vector.x*vector.x + vector.y*vector.y);
+        }
+        
+        public void drawEvent(RenderWindow window, Event event){
+            Cell cellClicked = null;
+            Tentacle tentacleClicked = null;
+            Float partTentacleClicked = null;
+            if (event.type == Event.Type.CLOSED) {
+                        window.close();
+                    }
+            if (event.type == Event.Type.MOUSE_BUTTON_PRESSED) {
+            Vector2i mousePosition = event.asMouseEvent().position;
+             
+            for (Cell cell : world.cellArray) {
+                if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
+                                    < cell.getRadius()) {
+                       cellClicked = cell;
+                }
+            }
+            for (Cell cell : world.cellArray) {
+                for (Tentacle tentacle : cell.tentacleSet) {
+                Float part = findIntersectionPart(new Geometry.Circle(mousePosition, 5),
+                                        new Geometry.Line(
+                                                Vector2f.add(tentacle.parentCell.getPosition(),
+                                                        Vector2f.mul(tentacle.getNormalizedDistanceVector(),
+                                                                tentacle.parentCell.getRadius())),
+                                                Vector2f.sub(tentacle.targetCell.getPosition(),
+                                                        Vector2f.mul(tentacle.getNormalizedDistanceVector(),
+                                                                tentacle.targetCell.getRadius()))));
+                    if (part != null && part < tentacle.getDistancePart()) {
+                        tentacleClicked = tentacle;
+                        partTentacleClicked = part;
+                        break;
+                    }
+                }
+            }
+         } 
+            
+        }
+        
+    
+        @Override
+        public void run() {
+            Object object = new Object();
+            System.out.println("In thread");
+            while(true)
+            {    
+                try {
+                    object = SocketConnection.readStream();
+                    System.out.println("I've read object");
+                } catch (IOException ex) {
+                    
+                } catch (ClassNotFoundException ex) {
+                    
+                }
+                if( object instanceof World) {   
+                    world = (World) object;
+                    System.out.println("Get world");
+                }
+                if(object instanceof Event) {
+                   drawEvent(window, (Event) object);
+                   System.out.println("Get event");
+                }
+            }    
+            
+        }
+        
+       
+        
+    }
+    
     public static void main(String args[]) throws IOException, InterruptedException, ClassNotFoundException {
         clientTeam = Team.Player1;
 
@@ -267,17 +376,27 @@ public class HelloJSFML {
         Cell cell6 = new Cell(new Vector2f(400, 400), 20, Team.Player1);
 
         world = new World();
-        SocketConnection client = new SocketConnection();
-        world = client.ReadStream();       //new World(cell1, cell2, cell3, cell4, cell5, cell6);
+        SocketConnection client = new SocketConnection(null);
+        
+//        Object object = new Object();
+//        object = SocketConnection.readStream();
+//        if( object instanceof World)
+//        {   
+//            world = (World) object;
+//        }
+     //   System.out.println(world.playerNumber);
+                //new World(cell1, cell2, cell3, cell4, cell5, cell6);
  
         Thread demoThread = new Thread(new DemoRunnable());
         Thread drawThread = new Thread(new DrawRunnable());
-        Thread recvThread = new Thread(new RecvRunnable());
+        Thread recvThread = new Thread(new RecvRunnable(client));
         Thread updateThread = new Thread(new UpdateRunnable(world));
         //demoThread.start();
         drawThread.start();
+        recvThread.start();
         updateThread.start();
         drawThread.join();
         updateThread.interrupt();
     }
+    
 }
