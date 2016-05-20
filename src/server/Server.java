@@ -1,10 +1,10 @@
-package server;
-
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.lang.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Server {
     public static void main(String[] args) throws IOException{
@@ -27,7 +27,7 @@ public class Server {
     }  
     
     //запускает объект Service на заданно порте
-    public void addService(Service service, int port) throws IOException {
+    public synchronized void addService(Service service, int port) throws IOException {
         Integer key = new Integer(port);//ключ хеш-таблицы
         //проверяем не занят ли этот порт службой
         if(services.get(key) != null)
@@ -45,7 +45,7 @@ public class Server {
     
     
     // прекращение принятия сервером новых подключений
-    public void removeService(int port){
+    public synchronized void removeService(int port){
         Integer key = port;
         //ищем в хэш таблице объект Listener, соответствующий заданному порту
         final Listener listener = services.get(key);
@@ -100,7 +100,7 @@ public class Server {
         }
        
     }
-    protected void addConnection(Socket socket, Service service)
+    protected synchronized void addConnection(Socket socket, Service service)
     {
         if(connections.size() >= maxConnections){
             try{
@@ -112,8 +112,10 @@ public class Server {
             }else{
                 Connection c = new Connection(socket, service);
                 connections.add(c);
-                //c.start();
-                c.run();
+                c.start();
+                ReadSendEvents read = new ReadSendEvents(socket, service);
+                read.start();
+                //c.run();
             }
     }  
     
@@ -121,12 +123,12 @@ public class Server {
         connections.remove(c);
     }
     
-    public void setMaxConnections(int max){
+    public synchronized void setMaxConnections(int max){
         maxConnections = max;
     }
     
     //выводит состояние сервера
-    public void displayStatus(PrintWriter out){
+    public synchronized void displayStatus(PrintWriter out){
         //отображает список всех служб
         Iterator keys = services.keySet().iterator();
         while(keys.hasNext()){
@@ -169,12 +171,41 @@ public class Server {
                
                 System.out.println("Serve started");
                
-                service.serve(in, out);
+                service.sendWorld(in, out);
             }
             catch(IOException e) {}
             finally{endConnection(this);}
         }
     }
+    public class ReadSendEvents extends Thread{
+        Socket socket;
+        Service service;
+        public ReadSendEvents(Socket socket, Service service){
+            this.socket = socket;
+            this.service = service;
+        }
+        @Override
+        public void run(){
+            try{
+                InputStream in = socket.getInputStream();
+                OutputStream out = socket.getOutputStream();
+               
+                System.out.println("Serve 2 started");
+               
+                service.readEvent(in, out);
+            }
+            catch(IOException e) {} 
+            catch (ClassNotFoundException ex) {}
+            finally{}
+            
+        }
+                
+        
+    }
+
+
+}
+
    
         
 
