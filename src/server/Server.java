@@ -1,20 +1,45 @@
-package server;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
 import java.util.*;
-import java.lang.*;
+import java.net.*;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jsfml.graphics.*;
+import org.jsfml.system.Vector2f;
+import org.jsfml.system.Vector2i;
+import org.jsfml.window.VideoMode;
+import org.jsfml.window.event.Event;
+
+import utils.Geometry;
+import world.UpdateRunnable;
+import world.World;
+import world.game.Team;
+import world.game.objects.Cell;
+import world.game.events.*;
+import world.game.objects.Tentacle;
+import static utils.Geometry.findIntersectionPart;
+
 public class Server {
+    static World world;
+    
     public static void main(String[] args) throws IOException{
+        Cell cell1 = new Cell(new Vector2f(100, 100), 20, Team.Player1);
+        Cell cell2 = new Cell(new Vector2f(200, 100), 20, Team.Player1);
+        Cell cell3 = new Cell(new Vector2f(100, 200), 20, Team.Player2);
+        Cell cell4 = new Cell(new Vector2f(300, 200), 20, Team.Player2);
+        Cell cell5 = new Cell(new Vector2f(150, 150), 10, Team.Neutral);
+        Cell cell6 = new Cell(new Vector2f(400, 400), 20, Team.Player1);
+
+        world = new world.World(cell1, cell2, cell3, cell4, cell5, cell6);
         Server s = new Server(10);  
         
         int port = 8080;
         s.addService(new Service(), port);
+        Thread updateThread = new Thread(new UpdateRunnable(world));
+        updateThread.start();
     }
-
     Map<Integer, Listener> services; // связывает порты с объектами Listener
     Set<Connection> connections; // текущие подключения
     int maxConnections; // максимальное количестов подклчений
@@ -30,7 +55,7 @@ public class Server {
     
     //запускает объект Service на заданно порте
     public synchronized void addService(Service service, int port) throws IOException {
-        Integer key = new Integer(port);//ключ хеш-таблицы
+        Integer key = port;//ключ хеш-таблицы
         //проверяем не занят ли этот порт службой
         if(services.get(key) != null)
             throw new IllegalArgumentException("Порт" + port + "уже используется");
@@ -173,7 +198,7 @@ public class Server {
                
                 System.out.println("Serve started");
                
-                service.sendWorld(out);
+                service.sendWorld(out, world);
             }
             catch(IOException e) {}
             finally{endConnection(this);}
@@ -190,10 +215,15 @@ public class Server {
         public void run(){
             try{
                 InputStream in = socket.getInputStream();
-
-                System.out.println("Serve 2 started");
+                OutputStream out = socket.getOutputStream();
                
-                service.readEvent(in);
+                System.out.println("Serve 2 started");
+                while(true){
+                   //world.game.events.Event event =  service.readEvent(in);
+                   Thread drawThread = new Thread(new DrawRunnable(service.readEvent(in)));
+                   drawThread.start();
+                    
+                }    
             }
             catch(IOException e) {} 
             catch (ClassNotFoundException ex) {}
@@ -203,9 +233,25 @@ public class Server {
                 
         
     }
-
+    static class DrawRunnable implements Runnable {
+        world.game.events.Event event;
+        
+        public DrawRunnable(world.game.events.Event event){
+            this.event = event;
+        }
+        
+        @Override
+        public void run() {
+           
+         //не совсем понимаю, как обрабатывать полученное событие 
+           
+        }        
+           
+        
+    }            
 
 }
+
 
    
         
