@@ -197,8 +197,11 @@ public class Server {
                 OutputStream out = clientSocket.getOutputStream();
                
                 System.out.println("Serve started");
-               
-                service.sendWorld(out, world);
+                while(true)
+                {    
+                    service.sendWorld(out, world);
+                    
+                }
             }
             catch(IOException e) {}
             finally{endConnection(this);}
