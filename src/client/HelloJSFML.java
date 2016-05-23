@@ -245,7 +245,7 @@ public class HelloJSFML {
             System.out.println("In thread");
             while (true) {
                 try {
-                    world = (World) SocketConnection.readStream();
+                    world.updateWorld((World) SocketConnection.readStream());
                     System.out.println("I've read world");
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -253,7 +253,7 @@ public class HelloJSFML {
                     e.printStackTrace();
                 }
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     break;
                 }

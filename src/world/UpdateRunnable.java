@@ -26,7 +26,8 @@ public class UpdateRunnable implements Runnable {
             while(true) {
                 synchronized (world) {
                     for (Cell cell : world.cellArray) {
-                        cell.setEnergy(cell.getEnergy() + 1);
+                        if (cell.getEnergy() < 100)
+                            cell.setEnergy(cell.getEnergy() + 1);
                     }
                 }
                 try {

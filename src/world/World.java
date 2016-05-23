@@ -15,6 +15,15 @@ public class World implements Drawable, Serializable {
         cellArray = cells;
     }
 
+    public void updateWorld(World world) {
+        if (cellArray.length != world.cellArray.length) {
+            System.out.println("World of invalid size recieved");
+        }
+        for (int i = 0; i < cellArray.length; i++) {
+            cellArray[i] = world.cellArray[i];
+        }
+    }
+
     @Override
     public void draw(RenderTarget renderTarget, RenderStates renderStates) {
         for (Cell cell :
