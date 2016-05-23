@@ -252,16 +252,20 @@ public class HelloJSFML {
             //Object object = new Object();
            
             System.out.println("In thread");
-            while(true){
+            Object object;
             try {
-                Object object = SocketConnection.readStream();
-                world = (World) object;
-                socket.setSoTimeout(600000);
-                world = (World) object;
-                System.out.println("I've read object");
+                while((object = SocketConnection.readStream()) != null){
+                    
+                     world = (World) object;
+                    // socket.setSoTimeout(600000);
+                    world = (World) object;
+                    System.out.println("I've read object");
+                    
+                }
             } catch (IOException ex) {
+              //  Logger.getLogger(HelloJSFML.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
-            }
+                //Logger.getLogger(HelloJSFML.class.getName()).log(Level.SEVERE, null, ex);
             }
          
         }
