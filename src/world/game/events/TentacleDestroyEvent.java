@@ -23,5 +23,7 @@ public class TentacleDestroyEvent extends Event implements Serializable {
     public void handle(World world) {
         world.cellArray[parentCellIndex].
                 getTentacle(world.cellArray[targetCellIndex]).setState(Tentacle.State.IsDestroyed);
+        world.cellArray[targetCellIndex].
+                getTentacle(world.cellArray[parentCellIndex]).setState(Tentacle.State.MovingForward);
     }
 }

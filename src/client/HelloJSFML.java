@@ -86,10 +86,11 @@ public class HelloJSFML {
                             world.cellArray[parentCellChosenIndex].isClicked = false;
                             parentCellChosenIndex = -1;
                         } else {
-                            world.cellArray[parentCellChosenIndex].isClicked = false;
                             world.game.events.Event event =
                                     new TentacleCreateEvent(parentCellChosenIndex,
                                             cellClickedIndex);
+                            world.cellArray[parentCellChosenIndex].isClicked = false;
+                            parentCellChosenIndex = -1;
                             try {
                                 SocketConnection.writeStream(event);
                                 System.out.println("event send");
