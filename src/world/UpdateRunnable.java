@@ -55,6 +55,7 @@ public class UpdateRunnable implements Runnable {
         public void run() {
             while (true) {
                 for (Cell cell : world.cellArray) {
+                    Tentacle removedTentacle = null;
                     for (Tentacle tentacle : cell.tentacleSet) {
                         if (tentacle.getState() == Tentacle.State.MovingForward) {
                             float velocity = velocityMap.get(Tentacle.State.MovingForward);
@@ -117,7 +118,8 @@ public class UpdateRunnable implements Runnable {
                             float newDistancePart = tentacle.getDistancePart() -
                                     velocity / tentacle.getDistance();
                             if (newDistancePart < 0) {
-                                cell.removeTentacle(tentacle);
+                                removedTentacle = tentacle;
+                                //cell.removeTentacle(tentacle);
                             }
                             else {
                                 tentacle.setDistancePart(newDistancePart);
@@ -143,10 +145,14 @@ public class UpdateRunnable implements Runnable {
                                 tentacle.setCuttedDistancePart(newCuttedPart);
                             }
                             if (tentacle.getDistancePart() <= 0.01f && tentacle.getCuttedDistancePart() >= 0.99f) {
-                                cell.removeTentacle(tentacle);
+                                removedTentacle = tentacle;
+                                //cell.removeTentacle(tentacle);
                             }
                             continue;
                         }
+                    }
+                    if (removedTentacle != null) {
+                        cell.removeTentacle(removedTentacle);
                     }
                 }
                 try {

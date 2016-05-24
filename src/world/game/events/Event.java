@@ -1,5 +1,8 @@
 package world.game.events;
 
+import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory;
+import world.World;
+
 import java.io.Serializable;
 
 // TODO Dasha
@@ -13,7 +16,7 @@ import java.io.Serializable;
 // То есть чтобы конструктор остался таким же и не надо было переписывать Main
 // где он вызывается
 
-public class Event implements Serializable {
+abstract public class Event implements Serializable {
     Type type;
     enum Type { TentacleCreate, TentacleDestroy }
     public TentacleCreateEvent asTentacleCreateEvent() throws Exception {
@@ -25,4 +28,6 @@ public class Event implements Serializable {
     public TentacleCutEvent asTentacleCutEvent() throws Exception {
         throw new Exception();
     }
+
+    abstract public void handle(World world);
 }

@@ -23,6 +23,11 @@ public class Tentacle implements Drawable, Serializable {
         return distancePart;
     }
     public void setDistancePart(float distancePart) {
+        float dEnergy = (distancePart - this.distancePart) * getDistance() / 2;
+        if (Math.abs(dEnergy) < 10)
+            parentCell.setEnergy(parentCell.getEnergy() - (int) dEnergy);
+        if (parentCell.getEnergy() < 0)
+            this.setState(State.IsDestroyed);
         this.distancePart = distancePart;
     }
 
@@ -31,6 +36,16 @@ public class Tentacle implements Drawable, Serializable {
         return cuttedDistancePart;
     }
     public void setCuttedDistancePart(float cuttedDistancePart) {
+        float dEnergy = (this.getCuttedDistancePart() - cuttedDistancePart) * getDistance() / 2;
+        if (Math.abs(dEnergy) < 10)
+            targetCell.setEnergy(targetCell.getEnergy() +
+                    ((int) dEnergy) * ((parentCell.getTeam() == targetCell.getTeam()) ? -1 : 1));
+        if (targetCell.getEnergy() < 0) {
+            targetCell.setTeam(parentCell.getTeam());
+            targetCell.setEnergy(10);
+        }
+        if (parentCell.getEnergy() < 0)
+            this.setState(State.IsDestroyed);
         this.cuttedDistancePart = cuttedDistancePart;
     }
 

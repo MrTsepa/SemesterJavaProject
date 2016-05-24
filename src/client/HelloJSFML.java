@@ -36,10 +36,10 @@ public class HelloJSFML {
             window.create(new VideoMode(640, 480), "Tentacle Wars");
             window.setFramerateLimit(30);
 
-            Cell parentCellChosen = null;
+            int parentCellChosenIndex = -1;
 
             while (window.isOpen()) {
-                Cell cellClicked = null;
+                int cellClickedIndex = -1;
                 Tentacle tentacleClicked = null;
                 Float partTentacleClicked = null;
                 
@@ -52,7 +52,7 @@ public class HelloJSFML {
                         for (Cell cell : world.cellArray) {
                             if (length(Vector2f.sub(cell.getPosition(), new Vector2f(mousePosition)))
                                     < cell.getRadius()) {
-                                cellClicked = cell;
+                                cellClickedIndex = world.getCellNumber(cell);
                             }
                         }
                         for (Cell cell : world.cellArray) {
@@ -74,106 +74,102 @@ public class HelloJSFML {
                         }
                     }
                 }
-                if (cellClicked != null) {
-                    if (parentCellChosen == null) {
+                if (cellClickedIndex != -1) {
+                    if (parentCellChosenIndex == -1) {
                         //if (cellClicked.getTeam() == clientTeam) {
-                            parentCellChosen = cellClicked;
-                            parentCellChosen.isClicked = true;
+                            parentCellChosenIndex = cellClickedIndex;
+                            world.cellArray[parentCellChosenIndex].isClicked = true;
                         //}
                     } else {
-                        if (cellClicked == parentCellChosen) {
-                            parentCellChosen.isClicked = false;
-                            parentCellChosen = null;
+                        if (cellClickedIndex ==
+                                parentCellChosenIndex) {
+                            world.cellArray[parentCellChosenIndex].isClicked = false;
+                            parentCellChosenIndex = -1;
                         } else {
-                            parentCellChosen.isClicked = false;
+                            world.cellArray[parentCellChosenIndex].isClicked = false;
                             world.game.events.Event event =
-                                    new TentacleCreateEvent(parentCellChosen, cellClicked);
+                                    new TentacleCreateEvent(parentCellChosenIndex,
+                                            cellClickedIndex);
                             try {
                                 SocketConnection.writeStream(event);
                                 System.out.println("event send");
                             } catch (IOException ex) {
                                 System.out.println("event didn't send");
                             }
-                            // TODO Dasha send event
-                            // пока что будет создавтаься локально
-                            parentCellChosen.tentacleSet.add(new Tentacle(parentCellChosen, cellClicked));
-                            parentCellChosen = null;
                         }
                     }
                 }
-                if (tentacleClicked != null && cellClicked == null) {
+                if (tentacleClicked != null && cellClickedIndex == -1) {
                     if (tentacleClicked.isConfronted() == false) {
                         if (tentacleClicked.getState() == Tentacle.State.MovingForward) {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
-                                        new TentacleDestroyEvent(tentacleClicked);
+                                        new TentacleDestroyEvent(
+                                                world.getCellNumber(tentacleClicked.parentCell),
+                                                world.getCellNumber(tentacleClicked.targetCell));
                                 try {
                                     SocketConnection.writeStream(event);
                                     System.out.println("event send");
                                 } catch (IOException ex) {
                                     System.out.println("event didn't send");
                                 }
-                                // TODO Dasha send event
-                                // пока что будет создавтаься локально
-                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
                             }
                         }
                         if (tentacleClicked.getState() == Tentacle.State.Still) {
                             world.game.events.Event event =
-                                    new TentacleCutEvent(tentacleClicked, partTentacleClicked);
+                                    new TentacleCutEvent(
+                                            world.getCellNumber(tentacleClicked.parentCell),
+                                            world.getCellNumber(tentacleClicked.targetCell),
+                                            partTentacleClicked);
                             try {
                                 SocketConnection.writeStream(event);
                                 System.out.println("event send");
                             } catch (IOException ex) {
                                 System.out.println("event didn't send");
                             }
-                            // TODO Dasha send event
-                            // пока что будет создавтаься локально
-                            tentacleClicked.setState(Tentacle.State.IsCutted);
-                            tentacleClicked.setCuttedDistancePart(partTentacleClicked);
-                            tentacleClicked.setDistancePart(partTentacleClicked);
                         }
                     }
                     if (tentacleClicked.isConfronted() == true) {
                         if (tentacleClicked.getState() == Tentacle.State.MovingForward) {
                             if (tentacleClicked.getDistancePart() > partTentacleClicked) {
                                 world.game.events.Event event =
-                                        new TentacleDestroyEvent(tentacleClicked);
-                            try {
-                                SocketConnection.writeStream(event);
-                                System.out.println("event send");
-                            } catch (IOException ex) {
-                                System.out.println("event didn't send");
-                            }
-                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
-                            }
-                        } // немного дублированного кода
-                        if (tentacleClicked.getState() == Tentacle.State.IsCollided) {
-                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
-                                world.game.events.Event event =
-                                        new TentacleDestroyEvent(tentacleClicked);
-                                 try {
-                                     SocketConnection.writeStream(event);
-                                     System.out.println("event send");
-                                 } catch (IOException ex) {
-                                     System.out.println("event didn't send");
-                                 }
-                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
-                                tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
-                            }
-                        }
-                        if (tentacleClicked.getState() == Tentacle.State.Still) {
-                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
-                                world.game.events.Event event =
-                                        new TentacleDestroyEvent(tentacleClicked);
+                                        new TentacleDestroyEvent(
+                                                world.getCellNumber(tentacleClicked.parentCell),
+                                                world.getCellNumber(tentacleClicked.targetCell));
                                 try {
                                     SocketConnection.writeStream(event);
                                     System.out.println("event send");
                                 } catch (IOException ex) {
                                     System.out.println("event didn't send");
                                 }
-                                tentacleClicked.setState(Tentacle.State.IsDestroyed);
-                                tentacleClicked.getConfronting().setState(Tentacle.State.MovingForward);
+                            }
+                        } // немного дублированного кода
+                        if (tentacleClicked.getState() == Tentacle.State.IsCollided) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(
+                                            world.getCellNumber(tentacleClicked.parentCell),
+                                            world.getCellNumber(tentacleClicked.targetCell));
+                                try {
+                                    SocketConnection.writeStream(event);
+                                    System.out.println("event send");
+                                } catch (IOException ex) {
+                                    System.out.println("event didn't send");
+                                }
+                            }
+                        }
+                        if (tentacleClicked.getState() == Tentacle.State.Still) {
+                            if (tentacleClicked.getDistancePart() > partTentacleClicked) {
+                                world.game.events.Event event =
+                                        new TentacleDestroyEvent(
+                                                world.getCellNumber(tentacleClicked.parentCell),
+                                                world.getCellNumber(tentacleClicked.targetCell));
+                                try {
+                                    SocketConnection.writeStream(event);
+                                    System.out.println("event send");
+                                } catch (IOException ex) {
+                                    System.out.println("event didn't send");
+                                }
                             }
 
                         }
@@ -245,15 +241,15 @@ public class HelloJSFML {
             System.out.println("In thread");
             while (true) {
                 try {
-                    world.updateWorld((World) SocketConnection.readStream());
-                    System.out.println("I've read world");
+                    world.update((World) SocketConnection.readStream());
+                //    System.out.println("I've read world");
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -282,10 +278,11 @@ public class HelloJSFML {
 
         recvThread.start();
         drawThread.start();
-       
         updateThread.start();
+
         drawThread.join();
-        recvThread.join();
+        //recvThread.join();
         updateThread.interrupt();
+        recvThread.interrupt(); // TODO Dasha завершить соединение
     }
 }

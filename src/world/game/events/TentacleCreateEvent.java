@@ -1,21 +1,27 @@
 package world.game.events;
 
+import world.World;
 import world.game.objects.Cell;
 
 import java.io.Serializable;
 
 public class TentacleCreateEvent extends Event implements Serializable {
-    public Cell parentCell;
-    public Cell targetCell;
+    public int parentCellIndex;
+    public int targetCellIndex;
 
-    public TentacleCreateEvent(Cell parentCell, Cell targetCell) {
+    public TentacleCreateEvent(int parentCellIndex, int targetCellIndex) {
         type = Type.TentacleCreate;
-        this.parentCell = parentCell;
-        this.targetCell = targetCell;
+        this.parentCellIndex = parentCellIndex;
+        this.targetCellIndex = targetCellIndex;
     }
 
     @Override
     public TentacleCreateEvent asTentacleCreateEvent() {
         return this;
+    }
+
+    @Override
+    public void handle(World world) {
+        world.cellArray[parentCellIndex].addTentacle(world.cellArray[targetCellIndex]);
     }
 }

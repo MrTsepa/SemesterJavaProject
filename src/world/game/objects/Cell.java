@@ -17,14 +17,16 @@ public class Cell implements Drawable, Serializable {
     private int energy;
     public Set<Tentacle> tentacleSet = new HashSet<>();
     public synchronized void addTentacle(Cell targetCell) {
-        if (tentacleSet.size() < getTentacleLimit()) {
-            Tentacle tentacle = new Tentacle(this, targetCell);
-            tentacleSet.add(tentacle);
-        }
+        if (!tentacleExists(targetCell))
+            if (tentacleSet.size() < getTentacleLimit()) {
+                Tentacle tentacle = new Tentacle(this, targetCell);
+                tentacleSet.add(tentacle);
+            }
         // TODO else
     }
     public synchronized void addTentacle(Tentacle tentacle) {
-        tentacleSet.add(tentacle);
+        if (!tentacleExists(tentacle.targetCell))
+            tentacleSet.add(tentacle);
     }
     public synchronized void removeTentacle(Tentacle tentacle) {
         tentacleSet.remove(tentacle);
@@ -32,8 +34,6 @@ public class Cell implements Drawable, Serializable {
 
     final private Vector2f position;
     public boolean isClicked = false;
-    /**
-     */
     private Team team;
     static Font font = new Font();
     static {

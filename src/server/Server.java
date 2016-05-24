@@ -201,11 +201,14 @@ public class Server {
                 while(true)
                 {    
                     service.sendWorld(out, world);
-                    
+                    Thread.sleep(100);
                 }
             }
-            catch(IOException e) {}
-            finally{endConnection(this);}
+            catch(IOException e) {
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally{endConnection(this);}
         }
     }
     public class ReadSendEvents extends Thread{
@@ -223,10 +226,7 @@ public class Server {
                
                 System.out.println("Serve 2 started");
                 while(true){
-                   //world.game.events.Event event =  service.readEvent(in);
-                   Thread drawThread = new Thread(new DrawRunnable(service.readEvent(in)));
-                   drawThread.start();
-                    
+                   service.readEvent(in).handle(world);
                 }    
             }
             catch(IOException e) {} 
