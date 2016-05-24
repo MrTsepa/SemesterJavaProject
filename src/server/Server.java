@@ -1,5 +1,3 @@
-package server;
-
 import java.io.IOException;
 import java.util.*;
 import java.net.*;
@@ -63,6 +61,7 @@ public class Server {
         
         //создаем объект Listener для этого порта
         Listener listener = new Listener(threadGroup, port, service);
+      
         //сохраняем в хеш-таблице
         services.put(key, listener);
         //запускаем Listener
@@ -120,6 +119,7 @@ public class Server {
                 Socket client = listenSocket.accept();
                 System.out.println("I did accept");
                 addConnection(client, service);
+                displayStatus();
                 System.out.println("I did addConnection");
             }     
             catch(InterruptedIOException e){}
@@ -140,6 +140,7 @@ public class Server {
             }else{
                 Connection c = new Connection(socket, service);
                 connections.add(c);
+                
                 c.start();
                 ReadSendEvents read = new ReadSendEvents(socket, service);
                 read.start();
@@ -156,22 +157,22 @@ public class Server {
     }
     
     //выводит состояние сервера
-    public synchronized void displayStatus(PrintWriter out){
+    public synchronized void displayStatus(){
         //отображает список всех служб
         Iterator keys = services.keySet().iterator();
         while(keys.hasNext()){
             Integer port = (Integer) keys.next();
             Listener listener = (Listener) services.get(port);
-            out.println("служба" + listener.service.getClass().getName() + "по порту" + port);
+            System.out.println("служба" + listener.service.getClass().getName() + "по порту" + port);
         }
         //ограничение на число подключений
-        out.println("максимальное число подключений" + maxConnections);
+        System.out.println("максимальное число подключений" + maxConnections);
         
         //отображает список всех подключений
         Iterator conns = connections.iterator();
         while(conns.hasNext()){
             Connection c = (Connection) conns.next();
-            out.println("подключение к" + c.clientSocket.getInetAddress().getHostAddress() + ":" +
+            System.out.println("подключение к" + c.clientSocket.getInetAddress().getHostAddress() + ":" +
             c.clientSocket.getPort() + "по порту" + c.clientSocket.getLocalPort() + 
             "для службы" + c.service.getClass().getName());
         }
@@ -237,25 +238,9 @@ public class Server {
                 
         
     }
-    static class DrawRunnable implements Runnable {
-        world.game.events.Event event;
-        
-        public DrawRunnable(world.game.events.Event event){
-            this.event = event;
-        }
-        
-        @Override
-        public void run() {
-           
-         //не совсем понимаю, как обрабатывать полученное событие 
-           
-        }        
-           
-        
-    }            
+             
 
 }
-
 
    
         
