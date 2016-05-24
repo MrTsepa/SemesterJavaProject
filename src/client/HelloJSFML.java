@@ -208,7 +208,7 @@ public class HelloJSFML {
             }
         }
 
-        public static void CloseSocket()
+        public static void closeSocket()
         {
             try{socket.close();} 
             catch(IOException e){}
@@ -283,6 +283,9 @@ public class HelloJSFML {
         drawThread.join();
         //recvThread.join();
         updateThread.interrupt();
-        recvThread.interrupt(); // TODO Dasha завершить соединение
+        recvThread.interrupt(); 
+        socketConnection.closeSocket();
     }
 }
+
+
